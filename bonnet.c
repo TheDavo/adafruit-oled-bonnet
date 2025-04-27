@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <gpiod.h>
 #include <linux/gpio.h>
 #include <linux/i2c-dev.h>
 #include <stdbool.h>
@@ -9,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+// display driver constants
 #define SET_CONTRAST 0x81
 #define SET_ENTIRE_ON 0xA5
 #define SET_ENTIRE_RAM 0xA4
@@ -29,53 +31,105 @@
 #define SET_PRECHARGE 0xD9
 #define SET_VCOM_DESEL 0xDB
 #define SET_CHARGE_PUMP 0x8D
-
 #define HEIGHT 64
 #define WIDTH 128
+
+// gpio constants
+#define CONST_CONSUMER "bonnet"
+#define CONST_NUM_BUTTONS 7
+// right-side buttons
+#define CONST_BUTTON_A 5
+#define CONST_BUTTON_B 6
+// dpad buttons
+#define CONST_BUTTON_L 27
+#define CONST_BUTTON_R 23
+#define CONST_BUTTON_U 17
+#define CONST_BUTTON_D 22
+#define CONST_BUTTON_C 4
 
 typedef struct bonnet {
 
   int i2cfd;
-  int gpiofd;
   int i2c_addr;
+
+  struct gpiod_chip *gpio_chip;
+  struct gpiod_line_bulk buttons;
+  struct gpiod_line_bulk button_events;
+
   int pages;
   bool powered;
 
 } bonnet;
 
 void bonnet_free(struct bonnet *b) {
-  close(b->gpiofd);
+  gpiod_line_release_bulk(&(b->buttons));
+  gpiod_chip_close(b->gpio_chip);
   close(b->i2cfd);
 
   free(b);
   b = NULL;
 }
 
+int bonnet__init_gpio_lines(struct bonnet *b) {
+  // help from https://lloydrochester.com/post/hardware/libgpiod-event-rpi/
+  // to initialize multiple lines
+
+  if (b->gpio_chip == NULL) {
+    printf("GPIO chip not iniialized\n");
+    return (-1);
+  }
+
+  unsigned int offsets[] = {CONST_BUTTON_A, CONST_BUTTON_B, CONST_BUTTON_C,
+                            CONST_BUTTON_D, CONST_BUTTON_L, CONST_BUTTON_R,
+                            CONST_BUTTON_U};
+
+  int err;
+  err = gpiod_chip_get_lines(b->gpio_chip, offsets, CONST_NUM_BUTTONS,
+                             &(b->buttons));
+  if (err) {
+    printf("Error getting bulk lines\n");
+    return (-1);
+  }
+
+  err = gpiod_line_request_bulk_input_flags(
+      &(b->buttons), CONST_CONSUMER, GPIOD_LINE_REQUEST_FLAG_BIAS_PULL_UP);
+  if (err) {
+    printf("Error line request bulk pull up\n");
+    return (-1);
+  }
+
+  return (0);
+}
+
 int bonnet_struct_init(struct bonnet *b, uint8_t bonnet_i2c_addr) {
 
   char *i2c_filename = "/dev/i2c-1";
-  char *gpio_filename = "/dev/gpiochip0";
+  char *gpio_chipname = "gpiochip0";
   b->i2c_addr = bonnet_i2c_addr;
   printf("opening i2c\n");
   if ((b->i2cfd = open(i2c_filename, O_RDWR)) < 0) {
     printf("Error opening i2c file descriptor\n");
-    bonnet_free(b);
     return (-1);
   }
 
   printf("setting up i2c\n");
   if (ioctl(b->i2cfd, I2C_SLAVE, bonnet_i2c_addr)) {
     printf("Error setting I2C slave addr\n");
-    bonnet_free(b);
+    close(b->i2cfd);
     return (-1);
   }
 
   printf("opening gpio\n");
-  if ((b->gpiofd = open(gpio_filename, O_RDWR)) < 0) {
-    printf("Error opening gpio file descriptor\n");
-    bonnet_free(b);
+  if ((b->gpio_chip = gpiod_chip_open_by_name(gpio_chipname)) == NULL) {
+    printf("Error opening gpiod chip name %s\n", gpio_chipname);
+
+    // since at this point only the i2c fd is open, close that
+    close(b->i2cfd);
     return (-1);
   }
+
+  // everything opened OK, can also request gpio lines for the buttons
+  bonnet__init_gpio_lines(b);
 
   return (0);
 }
@@ -135,10 +189,11 @@ int bonnet_write_multi_data(struct bonnet *b, uint8_t data[], int count_data) {
   return (0);
 }
 
-int bonnet_write_multi_data_blast(struct bonnet *b, uint8_t data[], int len_data) {
+int bonnet_write_multi_data_blast(struct bonnet *b, uint8_t data[],
+                                  int len_data) {
   uint8_t *buffer = malloc(sizeof(uint8_t) * len_data + (sizeof(uint8_t)));
   buffer[0] = 0x40;
-  memcpy(buffer+1, data, len_data);
+  memcpy(buffer + 1, data, len_data);
   int ret_val = write(b->i2cfd, buffer, len_data + sizeof(uint8_t));
   free(buffer);
   return ret_val;
@@ -195,23 +250,43 @@ int bonnet_display_initialize(struct bonnet *b) {
 
 int main(void) {
   struct bonnet *my_hat = malloc(sizeof(struct bonnet));
-  printf("bonnet_init ret %d\n", bonnet_struct_init(my_hat, 0x3C));
+  int init_ret = bonnet_struct_init(my_hat, 0x3C);
+  printf("bonnet_init ret %d\n", init_ret);
+  if (init_ret != 0) {
+    printf("Error initializing Bonnet, exiting\n");
+    return -1;
+  }
   bonnet_display_initialize(my_hat);
   uint8_t reset_column_cmds[] = {0x21, 0x00, 127};
   bonnet_write_multi_cmd(my_hat, reset_column_cmds, 3);
-  bool fill = true;
-  int time_cycle = 10;
-  uint8_t buffer[128*8];
-  for(int i = 0; i < time_cycle; i++){
-    if (fill) {
-      memset(&buffer, 0xFF, sizeof(buffer));
-    } else {
-      memset(&buffer, 0x00, sizeof(buffer));
+  uint8_t buffer[128 * 8];
+  int btn_a_pressed;
+  int btn_b_pressed;
+  int values[CONST_NUM_BUTTONS];
+  while (true) {
+    gpiod_line_get_value_bulk(&(my_hat->buttons), values);
+    btn_a_pressed = values[0];
+    btn_b_pressed = values[1];
+
+
+    // since there is a pull-up, these are default 1
+    // a 0 would indicate pressed
+    if (btn_a_pressed == 0 && btn_b_pressed == 0) {
+      printf("Button A&B pressed, exiting\n");
+      break;
     }
-    bonnet_write_multi_data_blast(my_hat, buffer, sizeof(buffer));
-    // usleep(100000);
-    fill = !fill;
-  } 
+    if (btn_a_pressed == 0) {
+      memset(&buffer, 0xFF, sizeof(buffer));
+      bonnet_write_multi_data_blast(my_hat, buffer, sizeof(buffer));
+    }
+    if (btn_b_pressed == 0) {
+      memset(&buffer, 0x00, sizeof(buffer));
+      bonnet_write_multi_data_blast(my_hat, buffer, sizeof(buffer));
+    }
+    usleep(100);
+  }
+  memset(&buffer, 0x00, sizeof(buffer));
+  bonnet_write_multi_data_blast(my_hat, buffer, sizeof(buffer));
   bonnet_free(my_hat);
   return 0;
 }

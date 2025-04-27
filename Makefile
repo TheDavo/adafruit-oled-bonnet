@@ -2,13 +2,14 @@
 
 CC=gcc
 errors=-Wall -Werror
+libs =-lgpiod
+src=bonnet.c
+output=bonnet.out
 
 bin_dir = "bin"
 
-all: bonnet.out
-
-bonnet.out: bonnet.c
-	$(CC) $(errors) $< -o $@
+all:
+	$(CC) $(src) $(errors) $(libs) -o $(output)
 
 clean:
 	rm -f bonnet.out
