@@ -9,7 +9,7 @@ output=bonnet.out
 bin_dir = "bin"
 
 all:
-	$(CC) $(src) $(errors) $(libs) -o $(output)
+	$(CC) -o $(output) $(src) $(errors) $(libs)
 
 clean:
 	rm -f bonnet.out

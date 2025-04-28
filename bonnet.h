@@ -27,6 +27,8 @@
 #define SET_CHARGE_PUMP 0x8D
 #define HEIGHT 64
 #define WIDTH 128
+#define PAGES 8
+#define PAGE_HEIGHT 8
 
 // gpio constants
 #define CONST_CONSUMER "bonnet"
@@ -49,6 +51,8 @@ typedef struct bonnet {
   struct gpiod_chip *gpio_chip;
   struct gpiod_line_bulk buttons;
   struct gpiod_line_bulk button_events;
+
+  uint8_t framebuffer[HEIGHT * WIDTH / PAGES];
 
 } bonnet;
 
@@ -110,12 +114,22 @@ int bonnet_write_multi_cmd(const struct bonnet b, uint8_t cmds[], int len_cmds);
  */
 int bonnet_write_data(const struct bonnet b, uint8_t data);
 
-
 /**
  * bonnet_write_multi_data writes the data[] to the display driver, placing
  * the buffer into the display driver's display RAM
  */
 int bonnet_write_multi_data(const struct bonnet b, uint8_t data[],
                             int count_data);
+
+// Drawing functions
+
+uint8_t bonnet__get_framebuffer_data_at(struct bonnet b, uint8_t x, uint8_t y);
+void bonnet__set_framebuffer_data_at(struct bonnet *b, uint8_t x, uint8_t y,
+                                     uint8_t value);
+
+void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
+                                  bool set);
+
+void bonnet_action_clear_display(struct bonnet *b);
 
 #endif

@@ -78,6 +78,7 @@ int bonnet_struct_init(struct bonnet *b, uint8_t bonnet_i2c_addr) {
   // everything opened OK, can also request gpio lines for the buttons
   bonnet__init_gpio_lines(b);
 
+  memset(b->framebuffer, 0, HEIGHT * WIDTH / PAGE_HEIGHT);
   return (0);
 }
 
@@ -189,6 +190,94 @@ int bonnet_display_initialize(struct bonnet b) {
   return (0);
 }
 
+/**
+ * bonnet__get_framebuffer_data_at returns the byte that the pixel (x,y) would
+ * be at
+ *
+ * Bonnet's framebuffer is segmented with pages and not individual pixels, and
+ * the framebuffer mimics that structure
+ *
+ * This function is correctly used by bonnet_action_write_to_pixel and should
+ * not be called on its own.
+ */
+uint8_t bonnet__get_framebuffer_data_at(struct bonnet b, uint8_t x, uint8_t y) {
+  // column  y 00 01 02 03 04 and so on...
+  // page 0  0|01|  |  |  |  |
+  // page 0  1|02|  |  |  |  |
+  // page 0  2|04|  |  |  |  |
+  // page 0  3|08|  |  |  |  |
+  // page 0  4|10|  |  |  |  |
+  // page 0  5|20|  |  |  |  |
+  // page 0  6|40|  |  |  |  |
+  // page 0  7|80|  |  |  |  |
+  // page 1  8|00|  |  |  |  |
+  int location = (y / PAGE_HEIGHT) * WIDTH + x;
+  return b.framebuffer[location];
+}
+
+/**
+ * bonnet__set_framebuffer_data_at sets the byte value at the page and column
+ * determined by where a pixel at (x,y) would be at
+ *
+ * This function is correctly used by bonnet_action_write_to_pixel and should
+ * not be called on its own.
+ */
+
+void bonnet__set_framebuffer_data_at(struct bonnet *b, uint8_t x, uint8_t y,
+                                     uint8_t value) {
+  int location = (y / PAGE_HEIGHT) * WIDTH + x;
+  b->framebuffer[location] = value;
+}
+
+/**
+ * bonnet_action_write_to_pixel sets or unsets a pixel at the x,y coordinates.
+ *
+ * This is an action function and will update the rendering on the display.
+ */
+void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
+                                  bool set) {
+  // simple clamping for now, allows wrapping
+  x = x % (WIDTH);
+  y = y % (HEIGHT);
+  uint8_t page = (y / 8);
+
+  uint8_t col_byte = bonnet__get_framebuffer_data_at(*b, x, y);
+  uint8_t new_col_byte = 0;
+  if (set) {
+    new_col_byte = col_byte | (1 << (y % 8));
+  } else {
+    new_col_byte = col_byte & (0 << (y % 8));
+  }
+  bonnet__set_framebuffer_data_at(b, x, y, new_col_byte);
+  if (new_col_byte != col_byte) {
+    // printf("writing to page %d -> (%3d,%2d) with value %d -> %d\n", page, x,
+    // y,
+    //        col_byte, new_col_byte);
+  }
+
+  uint8_t set_column = 0x21;
+  uint8_t set_page = 0x22;
+  uint8_t cmds[] = {set_column, x, x, set_page, page, page};
+  uint8_t len_cmds = sizeof(cmds) / sizeof(uint8_t);
+  bonnet_write_multi_cmd(*b, cmds, len_cmds);
+  bonnet_write_data(*b, new_col_byte);
+}
+
+/**
+ * bonnet_action_clear_display clears the framebuffer and updates the display.
+ * This function _will_ overwrite the internal framebuffer and set it all
+ * to zero.
+ *
+ * This is an action function and will update the rendering on the display.
+ */
+void bonnet_action_clear_display(struct bonnet *b) {
+  uint8_t cmds[] = {0x21, 0, WIDTH - 1, 0x22, 0, 7, SET_CONTRAST, 0x00};
+  uint8_t len_cmds = sizeof(cmds) / sizeof(uint8_t);
+  bonnet_write_multi_cmd(*b, cmds, len_cmds);
+  memset(b->framebuffer, 0x00, sizeof(b->framebuffer));
+  bonnet_write_multi_data(*b, b->framebuffer, sizeof(b->framebuffer));
+}
+
 int main(void) {
   struct bonnet my_hat;
   int init_ret = bonnet_struct_init(&my_hat, 0x3C);
@@ -198,16 +287,29 @@ int main(void) {
     return -1;
   }
   bonnet_display_initialize(my_hat);
-  uint8_t reset_column_cmds[] = {0x21, 0x00, 127};
-  bonnet_write_multi_cmd(my_hat, reset_column_cmds, 3);
-  uint8_t buffer[128 * 8];
+  bonnet_action_clear_display(&my_hat);
   int btn_a_pressed;
   int btn_b_pressed;
+  int btn_l_pressed;
+  int btn_r_pressed;
+  int btn_u_pressed;
+  int btn_d_pressed;
   int values[CONST_NUM_BUTTONS];
+  uint8_t x_at = WIDTH / 2;
+  uint8_t y_at = HEIGHT / 2;
+  bool direction_pressed = false;
+  bool erase = false;
   while (true) {
     gpiod_line_get_value_bulk(&(my_hat.buttons), values);
+    // unsigned int offsets[] = {CONST_BUTTON_A, CONST_BUTTON_B, CONST_BUTTON_C,
+    //                           CONST_BUTTON_D, CONST_BUTTON_L, CONST_BUTTON_R,
+    //                           CONST_BUTTON_U};
     btn_a_pressed = values[0];
     btn_b_pressed = values[1];
+    btn_d_pressed = values[3];
+    btn_l_pressed = values[4];
+    btn_r_pressed = values[5];
+    btn_u_pressed = values[6];
 
     // since there is a pull-up, these are default 1
     // a 0 would indicate pressed
@@ -215,18 +317,40 @@ int main(void) {
       printf("Button A&B pressed, exiting\n");
       break;
     }
+
     if (btn_a_pressed == 0) {
-      memset(&buffer, 0xFF, sizeof(buffer));
-      bonnet_write_multi_data(my_hat, buffer, sizeof(buffer));
+      bonnet_action_clear_display(&my_hat);
     }
     if (btn_b_pressed == 0) {
-      memset(&buffer, 0x00, sizeof(buffer));
-      bonnet_write_multi_data(my_hat, buffer, sizeof(buffer));
+      erase = !erase;
+      printf("erase value: %d\n", erase);
     }
-    usleep(100);
+    if (btn_l_pressed == 0) {
+      --x_at;
+      direction_pressed = true;
+    }
+    if (btn_r_pressed == 0) {
+      ++x_at;
+      direction_pressed = true;
+    }
+    if (btn_u_pressed == 0) {
+      --y_at;
+      direction_pressed = true;
+    }
+    if (btn_d_pressed == 0) {
+      ++y_at;
+      direction_pressed = true;
+    }
+    if (direction_pressed) {
+      // printf("x, y: %d, %d\n", x_at, y_at);
+      bonnet_action_write_to_pixel(&my_hat, x_at, y_at, !erase);
+      direction_pressed = false;
+    }
+
+    usleep(10000);
   }
-  memset(&buffer, 0x00, sizeof(buffer));
-  bonnet_write_multi_data(my_hat, buffer, sizeof(buffer));
+  // bonnet_clear_display(my_hat);
+  bonnet_write_cmd(my_hat, SET_DISP_OFF);
   bonnet_close(&my_hat);
   return 0;
 }
