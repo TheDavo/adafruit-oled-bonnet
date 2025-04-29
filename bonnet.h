@@ -29,6 +29,7 @@
 #define WIDTH 128
 #define PAGES 8
 #define PAGE_HEIGHT 8
+#define FRAMEBUFFER_SIZE ((HEIGHT * WIDTH) / (PAGE_HEIGHT))
 
 // gpio constants
 #define CONST_CONSUMER "bonnet"
@@ -56,6 +57,13 @@ typedef struct bonnet {
 
 } bonnet;
 
+/**
+ * bonnet_struct_init opens the I2C file descriptor and opens the GPIO chip
+ * and calls bonnet__init_gpio_lines to request the button lines
+ *
+ * Returns (-1) on failure and (0) on success
+ *
+ */
 int bonnet_struct_init(struct bonnet *b, uint8_t bonnet_i2c_addr);
 
 /**
@@ -64,12 +72,16 @@ int bonnet_struct_init(struct bonnet *b, uint8_t bonnet_i2c_addr);
  *
  *  This function will also free @param b and set it to NULL
  *
+ * Returns (-1) on failure and (0) on success
+ *
  */
 void bonnet_close(struct bonnet *b);
 
 /**
  * bonnet__init_gpio_lines initializes the GPIO lines for the buttons
  * it is meant to be used after the bonnet_struct_init() function is called
+ *
+ * Returns (-1) on failure and (0) on success
  *
  */
 int bonnet__init_gpio_lines(struct bonnet *b);
@@ -92,6 +104,9 @@ int bonnet_display_initialize(struct bonnet b);
 
 /**
  * bonnet_write_cmd takes a I2C command and writes it to the display driver
+ *
+ * Returns (-1) on failure and (0) on success
+ *
  */
 int bonnet_write_cmd(const struct bonnet b, uint8_t cmd);
 
@@ -102,6 +117,9 @@ int bonnet_write_cmd(const struct bonnet b, uint8_t cmd);
  * NOTE:
  * This could be improved to be like bonnet_write_multi_data in which one
  * write command is used instead of multiple invocations
+ *
+ * Returns (-1) on failure and (0) on success
+ *
  */
 int bonnet_write_multi_cmd(const struct bonnet b, uint8_t cmds[], int len_cmds);
 
@@ -111,25 +129,62 @@ int bonnet_write_multi_cmd(const struct bonnet b, uint8_t cmds[], int len_cmds);
  * Data written to the device is placed into the graphics display RAM of the
  * display driver
  *
+ *
+ * Returns (-1) on failure and (0) on success
+ *
  */
 int bonnet_write_data(const struct bonnet b, uint8_t data);
 
 /**
  * bonnet_write_multi_data writes the data[] to the display driver, placing
  * the buffer into the display driver's display RAM
+ *
+ * Returns (-1) on failure and (0) on success
+ *
  */
 int bonnet_write_multi_data(const struct bonnet b, uint8_t data[],
                             int count_data);
 
 // Drawing functions
 
+/**
+ * bonnet__get_framebuffer_data_at returns the byte that the pixel (x,y) would
+ * be at
+ *
+ * Bonnet's framebuffer is segmented with pages and not individual pixels, and
+ * the framebuffer mimics that structure
+ *
+ * This function is correctly used by bonnet_action_write_to_pixel and should
+ * not be called on its own.
+ *
+ */
 uint8_t bonnet__get_framebuffer_data_at(struct bonnet b, uint8_t x, uint8_t y);
+
+/**
+ * bonnet__set_framebuffer_data_at sets the byte value at the page and column
+ * determined by where a pixel at (x,y) would be at
+ *
+ * This function is correctly used by bonnet_action_write_to_pixel and should
+ * not be called on its own.
+ */
 void bonnet__set_framebuffer_data_at(struct bonnet *b, uint8_t x, uint8_t y,
                                      uint8_t value);
-
+/**
+ * bonnet_action_write_to_pixel updates the pixel at (x, y) on if `set` is true
+ * or off if `set` is false
+ *
+ * This is an action function and will update the rendering on the display.
+ */
 void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
                                   bool set);
 
+/**
+ * bonnet_action_clear_display clears the framebuffer and updates the display.
+ * This function _will_ overwrite the internal framebuffer and set it all
+ * to zero.
+ *
+ * This is an action function and will update the rendering on the display.
+ */
 void bonnet_action_clear_display(struct bonnet *b);
 
 #endif

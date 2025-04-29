@@ -5,11 +5,15 @@ errors=-Wall -Werror
 libs =-lgpiod
 src=bonnet.c
 output=bonnet.out
-
+etchsketch_src=./examples/etchsketch.c
 bin_dir = "bin"
 
+.PHONY = all
 all:
-	$(CC) -o $(output) $(src) $(errors) $(libs)
+	@echo "use 'make etchsketch' or other example files to create a game"
+
+etchsketch: bonnet.c bonnet.o
+	$(CC) -o etchsketch.out $(etchsketch_src) $(src) $(errors) $(libs)
 
 clean:
 	rm -f bonnet.out
