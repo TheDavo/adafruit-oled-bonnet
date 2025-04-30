@@ -1,6 +1,6 @@
+#include "../bonnet.h"
 #include <stdio.h>
 #include <unistd.h>
-#include "../bonnet.h"
 
 int main(void) {
   struct bonnet my_hat;
@@ -50,23 +50,31 @@ int main(void) {
       printf("erase value: %d\n", erase);
     }
     if (btn_l_pressed == 0) {
-      if (x_at == 0) x_at = 0;
-      else --x_at;
+      if (x_at == 0)
+        x_at = 0;
+      else
+        --x_at;
       direction_pressed = true;
     }
     if (btn_r_pressed == 0) {
-      if (x_at >= WIDTH-1) x_at = WIDTH-1;
-      else ++x_at;
+      if (x_at >= WIDTH - 1)
+        x_at = WIDTH - 1;
+      else
+        ++x_at;
       direction_pressed = true;
     }
     if (btn_u_pressed == 0) {
-      if (y_at == 0) y_at = 0;
-      else --y_at;
+      if (y_at == 0)
+        y_at = 0;
+      else
+        --y_at;
       direction_pressed = true;
     }
     if (btn_d_pressed == 0) {
-      if (y_at >= HEIGHT-1) y_at = HEIGHT-1;
-      else ++y_at;
+      if (y_at >= HEIGHT - 1)
+        y_at = HEIGHT - 1;
+      else
+        ++y_at;
       direction_pressed = true;
     }
     if (direction_pressed) {

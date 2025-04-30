@@ -6,6 +6,7 @@ libs =-lgpiod
 src=bonnet.c
 output=bonnet.out
 etchsketch_src=./examples/etchsketch.c
+cursor_src=./examples/cursor.c
 bin_dir = "bin"
 
 .PHONY = all
@@ -14,6 +15,9 @@ all:
 
 etchsketch: bonnet.c bonnet.o
 	$(CC) -o etchsketch.out $(etchsketch_src) $(src) $(errors) $(libs)
+
+cursor: bonnet.c bonnet.o
+	$(CC) -o cursor.out $(cursor_src) $(src) $(errors) $(libs)
 
 clean:
 	rm -f bonnet.out
