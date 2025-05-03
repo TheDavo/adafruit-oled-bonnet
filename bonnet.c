@@ -213,11 +213,6 @@ void bonnet__set_framebuffer_data_at(struct bonnet *b, uint8_t x, uint8_t y,
 
 void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
                                   bool set) {
-  // simple clamping for now, allows wrapping
-  // x = x % (WIDTH);
-  // x = clamp_to_width(x);
-  // y = y % (HEIGHT);
-  // y = clamp_to_height(y);
   uint8_t page = (y / PAGE_HEIGHT);
 
   uint8_t col_byte = bonnet__get_framebuffer_data_at(*b, x, y);
@@ -228,11 +223,6 @@ void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
     new_col_byte = col_byte & (0 << (y % 8));
   }
   bonnet__set_framebuffer_data_at(b, x, y, new_col_byte);
-  if (new_col_byte != col_byte) {
-    // printf("writing to page %d -> (%3d,%2d) with value %d -> %d\n", page, x,
-    // y,
-    //        col_byte, new_col_byte);
-  }
 
   uint8_t set_column = 0x21;
   uint8_t set_page = 0x22;
@@ -240,6 +230,15 @@ void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
   uint8_t len_cmds = sizeof(cmds) / sizeof(uint8_t);
   bonnet_write_multi_cmd(*b, cmds, len_cmds);
   bonnet_write_data(*b, new_col_byte);
+}
+void bonnet_action_write_to_column(struct bonnet *b, uint8_t page, uint8_t col,
+                                  uint8_t new_data) {
+  uint8_t set_column = 0x21;
+  uint8_t set_page = 0x22;
+  uint8_t cmds[] = {set_column, col, col, set_page, page, page};
+  uint8_t len_cmds = sizeof(cmds) / sizeof(uint8_t);
+  bonnet_write_multi_cmd(*b, cmds, len_cmds);
+  bonnet_write_data(*b, new_data);
 }
 
 void bonnet_action_clear_display(struct bonnet *b) {

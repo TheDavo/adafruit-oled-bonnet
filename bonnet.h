@@ -3,6 +3,7 @@
 
 #include <gpiod.h>
 #include <stdint.h>
+#include "./src/ssd1306.h"
 
 // display driver constants
 #define SET_CONTRAST 0x81
@@ -177,6 +178,9 @@ void bonnet__set_framebuffer_data_at(struct bonnet *b, uint8_t x, uint8_t y,
  */
 void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
                                   bool set);
+
+void bonnet_action_write_to_column(struct bonnet *b, uint8_t page, uint8_t col,
+                                  uint8_t new_data);
 
 /**
  * bonnet_action_clear_display clears the framebuffer and updates the display.
