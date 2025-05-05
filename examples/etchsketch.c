@@ -1,4 +1,4 @@
-#include "../bonnet.h"
+#include "../src/bonnet.h"
 #include <stdio.h>
 #include <unistd.h>
 

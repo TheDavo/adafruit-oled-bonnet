@@ -1,6 +1,7 @@
-#include "../bonnet.h"
+#include "../src/bonnet.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h> // memset
 #include <unistd.h>
 
@@ -163,7 +164,7 @@ void cursor_update_all_pixel_pos(struct pixel_t *cursor_pixels, int cursor_size,
   }
 }
 
-int main(void) {
+int main(int argc, char **argv) {
   struct bonnet my_hat;
   framebuffer_t fb;
   int init_ret = bonnet_struct_init(&my_hat, 0x3C);
@@ -172,11 +173,20 @@ int main(void) {
     printf("Error initializing Bonnet, exiting\n");
     return -1;
   }
+  framebuffer_buffers_reset(&fb);
   bonnet_display_initialize(my_hat);
-  bonnet_action_clear_display(&my_hat);
+
+  int edge_len_input = 10; // default
+  if (argc == 2) {
+    edge_len_input = atoi(argv[1]);
+    if (edge_len_input < 2) {
+      edge_len_input = 2;
+    }
+    edge_len_input = (uint8_t)edge_len_input;
+  }
 
   struct cursor_info_t my_cursor = {
-      .edge_len = 10,
+      .edge_len = edge_len_input,
       .topleft_x = 0,
       .topleft_y = 0,
   };
@@ -251,45 +261,23 @@ int main(void) {
       // bonnet_action_clear_display(&my_hat);
       cursor_update_all_pixel_pos(cursor_pixels, cursor_size, x_move, y_move);
       framebuffer_update_backbuffer(&fb, cursor_pixels, cursor_size);
-      uint8_t new_x, new_y;
+      uint8_t new_x;
+      uint8_t page;
       for (int i = 0; i < FRAMEBUFFER_SIZE; i++) {
         if (fb.back_buffer[i] != fb.front_buffer[i]) {
-          printf("delta in buffers found\n");
-          printf("col %d: bb = %d, fb = %d\n", i % WIDTH, fb.back_buffer[i],
-                 fb.front_buffer[i]);
-          for (uint8_t j = 0; j < 8; j++) {
-            // backbuffer has pixel on but frontbuffer has pixel off
-            new_x = (uint8_t)(i % WIDTH);
-            new_y = (uint8_t)((i / WIDTH) * PAGE_HEIGHT + j);
-            // if ((fb.back_buffer[i] & (0x1 << j)) != 0 &&
-            //     (fb.front_buffer[i] & (0x1 << j)) == 0) {
-            //   printf("i: %d j: %d\nnew x: %d, new y: %d\n", i, j, new_x, new_y);
-            //   bonnet_action_write_to_pixel(&my_hat, new_x, new_y, true);
-            //   framebuffer_set_back_data_at(&fb, new_x, new_y, true);
-            //   // frontbuffer has pixel on but backbuffer has pixel off
-            // } else if ((fb.back_buffer[i] & (0x1 << j)) == 0 &&
-            //            (fb.front_buffer[i] & (0x1 << j)) != 0) {
-            //   bonnet_action_write_to_pixel(&my_hat, new_x, new_y, false);
-            //   framebuffer_set_back_data_at(&fb, new_x, new_y, false);
-            // }
-            if ((fb.back_buffer[i] & (0x01 << j)) ^
-                (fb.front_buffer[i] & (0x01 << j))) {
-              printf("i: %d j: %d\nnew x: %d, new y: %d\n", i, j, new_x, new_y);
-              // bonnet_action_write_to_pixel(&my_hat, new_x, new_y,(fb.back_buffer[i] & (0x1 << j))>>j);
-              bonnet_action_write_to_column(&my_hat, (uint8_t)(i/WIDTH), new_x, fb.back_buffer[i]);
-            }
-          }
+          new_x = (uint8_t)(i % WIDTH);
+          page = (uint8_t)(i / WIDTH);
+          bonnet_action_write_to_segment(&my_hat, page, new_x,
+                                        fb.back_buffer[i]);
         }
       }
       framebuffer_set_back_to_front(&fb);
-      // cursor_action_draw(cursor_pixels, &my_hat, my_cursor.edge_len);
       direction_pressed = false;
       x_move = 0;
       y_move = 0;
     }
 
     usleep(10000);
-    // sleep(1);
   }
 
   bonnet_write_cmd(my_hat, SET_DISP_OFF);
