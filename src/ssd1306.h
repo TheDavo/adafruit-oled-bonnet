@@ -2,6 +2,7 @@
 #define SSD1306_H
 
 #include <stdint.h>
+#include <sys/types.h>
 
 // display driver constants
 #define ssd1306_SET_CONTRAST 0x81
@@ -28,11 +29,11 @@
 #define ssd1306_WIDTH 128
 #define ssd1306_PAGES 8
 #define ssd1306_PAGE_HEIGHT 8
-#define FRAMEBUFFER_SIZE ((HEIGHT * WIDTH) / (PAGE_HEIGHT))
+// #define FRAMEBUFFER_SIZE ((HEIGHT * WIDTH) / (PAGE_HEIGHT))
 
 typedef struct {
   int i2cfd;
-  int i2c_addr;
+  uint8_t i2c_addr;
   // int reset_gpio;
   // uint8_t height;
   // uint8_t width;
@@ -46,7 +47,7 @@ typedef struct {
  *
  * Returns (-1) on error or (0) on success
  */
-int ssd1306_struct_init(ssd1306_t *ssd, int addr, char *dev_i2c);
+int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c);
 
 /**
  * ssd1306_free closes the file descriptor to the I2C channel
@@ -66,7 +67,7 @@ int ssd1306_write_cmd(ssd1306_t ssd, uint8_t cmd);
  * ssd1306_write_cmd_multi writes all the commands in *cmds to the display
  * driver.
  * NOTE: The cmd_sizeof is not the count of elements in *cmds,  but the
- * value of sizeof(cmds)
+ * size, in bytes, of the data array
  *
  * Returns the return value from the write() command, which is
  * the number of bytes written, or (-1) on error
@@ -89,7 +90,7 @@ int ssd1306_write_data(ssd1306_t ssd, uint8_t data);
  * ssd1306_write_multi_data writes the data in *data to the display driver,
  * placing the buffer into the display driver's display RAM
  * NOTE: The data_sizeof is not the count of elements in *data, but the
- * value of sizeof(data)
+ * size, in bytes, of the data array
  *
  * Returns (-1) on failure and (0) on success
  *

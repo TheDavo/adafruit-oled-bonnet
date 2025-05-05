@@ -3,7 +3,7 @@
 
 #include <gpiod.h>
 #include <stdint.h>
-#include "./src/ssd1306.h"
+#include "ssd1306.h"
 
 // display driver constants
 #define SET_CONTRAST 0x81
@@ -46,15 +46,15 @@
 #define CONST_BUTTON_C 4
 
 typedef struct bonnet {
-
   int i2cfd;
   int i2c_addr;
 
+  ssd1306_t ssd;
   struct gpiod_chip *gpio_chip;
   struct gpiod_line_bulk buttons;
   struct gpiod_line_bulk button_events;
 
-  uint8_t framebuffer[HEIGHT * WIDTH / PAGES];
+  uint8_t framebuffer[FRAMEBUFFER_SIZE];
 
 } bonnet;
 
@@ -190,5 +190,7 @@ void bonnet_action_write_to_column(struct bonnet *b, uint8_t page, uint8_t col,
  * This is an action function and will update the rendering on the display.
  */
 void bonnet_action_clear_display(struct bonnet *b);
+
+void bonnet_display_framebuffer(struct bonnet b);
 
 #endif
