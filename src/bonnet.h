@@ -179,8 +179,8 @@ void bonnet__set_framebuffer_data_at(struct bonnet *b, uint8_t x, uint8_t y,
 void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
                                   bool set);
 
-void bonnet_action_write_to_column(struct bonnet *b, uint8_t page, uint8_t col,
-                                  uint8_t new_data);
+void bonnet_action_write_to_segment(struct bonnet *b, uint8_t page, uint8_t col,
+                                  uint8_t data);
 
 /**
  * bonnet_action_clear_display clears the framebuffer and updates the display.

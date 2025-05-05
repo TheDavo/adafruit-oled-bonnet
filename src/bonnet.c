@@ -203,13 +203,9 @@ void bonnet_display_framebuffer(struct bonnet b) {
     printf("\n");
   }
 }
-void bonnet_action_write_to_column(struct bonnet *b, uint8_t page, uint8_t col,
-                                  uint8_t new_data) {
-  uint8_t set_column = 0x21;
-  uint8_t set_page = 0x22;
-  uint8_t cmds[] = {set_column, col, col, set_page, page, page};
-  ssd1306_write_cmd_multi(b->ssd, cmds, sizeof(cmds));
-  ssd1306_write_data(b->ssd, new_data);
+void bonnet_action_write_to_segment(struct bonnet *b, uint8_t page, uint8_t col,
+                                  uint8_t data) {
+  ssd1306_write_data_to_segment(b->ssd, page, col, data);
 }
 
 void bonnet_action_clear_display(struct bonnet *b) {
