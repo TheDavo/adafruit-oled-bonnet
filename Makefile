@@ -3,21 +3,20 @@
 CC=gcc
 errors=-Wall -Werror
 libs =-lgpiod
-src=bonnet.c
-output=bonnet.out
+examples_dir=./examples/
 etchsketch_src=./examples/etchsketch.c
 cursor_src=./examples/cursor.c
-bin_dir = "bin"
+src_dir =src
+srcs = $(wildcard ./src/*.c)
 
-.PHONY = all
-all:
-	@echo "use 'make etchsketch' or other example files to create a game"
+.PHONY = all clean
+all: etchsketch.out cursor.out
 
-etchsketch: bonnet.c bonnet.o
-	$(CC) -o etchsketch.out $(etchsketch_src) $(src) $(errors) $(libs)
+etchsketch.out: $(etchsketch_src) $(srcs)
+	$(CC) -o etchsketch.out $(etchsketch_src) $(srcs) $(errors) $(libs)
 
-cursor: bonnet.c bonnet.o
-	$(CC) -o cursor.out $(cursor_src) $(src) $(errors) $(libs)
+cursor.out:  $(cursor_src) $(srcs)
+	$(CC) -o cursor.out $(cursor_src) $(srcs) $(errors) $(libs)
 
 clean:
-	rm -f bonnet.out
+	rm *.out
