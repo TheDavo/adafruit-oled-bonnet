@@ -177,12 +177,21 @@ int main(int argc, char **argv) {
   bonnet_display_initialize(my_hat);
 
   int edge_len_input = 10; // default
+  uint8_t move_delta = 5;
   if (argc == 2) {
     edge_len_input = atoi(argv[1]);
     if (edge_len_input < 2) {
       edge_len_input = 2;
     }
     edge_len_input = (uint8_t)edge_len_input;
+  }
+  if (argc == 3) {
+    edge_len_input = atoi(argv[1]);
+    if (edge_len_input < 2) {
+      edge_len_input = 2;
+    }
+    edge_len_input = (uint8_t)edge_len_input;
+    move_delta = (uint8_t)atoi(argv[2]);
   }
 
   struct cursor_info_t my_cursor = {
@@ -214,7 +223,10 @@ int main(int argc, char **argv) {
   bool direction_pressed = false;
   bool erase = false;
   uint8_t x_move = 0, y_move = 0;
-  uint8_t move_delta = 5;
+  uint8_t set_column = 0x21;
+  uint8_t set_page = 0x22;
+  uint8_t cmds[] = {set_column, 0, WIDTH - 1, set_page, 0, 7};
+  bonnet_write_multi_cmd(my_hat, cmds, sizeof(cmds));
 
   while (true) {
     gpiod_line_get_value_bulk(&(my_hat.buttons), values);
@@ -261,23 +273,25 @@ int main(int argc, char **argv) {
       // bonnet_action_clear_display(&my_hat);
       cursor_update_all_pixel_pos(cursor_pixels, cursor_size, x_move, y_move);
       framebuffer_update_backbuffer(&fb, cursor_pixels, cursor_size);
-      uint8_t new_x;
-      uint8_t page;
-      for (int i = 0; i < FRAMEBUFFER_SIZE; i++) {
-        if (fb.back_buffer[i] != fb.front_buffer[i]) {
-          new_x = (uint8_t)(i % WIDTH);
-          page = (uint8_t)(i / WIDTH);
-          bonnet_action_write_to_segment(&my_hat, page, new_x,
-                                        fb.back_buffer[i]);
-        }
-      }
+      // uint8_t new_x;
+      // uint8_t page;
+      // for (int i = 0; i < FRAMEBUFFER_SIZE; i++) {
+      //   if (fb.back_buffer[i] != fb.front_buffer[i]) {
+      //     new_x = (uint8_t)(i % WIDTH);
+      //     page = (uint8_t)(i / WIDTH);
+      //     bonnet_action_write_to_segment(&my_hat, page, new_x,
+      //                                   fb.back_buffer[i]);
+
+      //   }
+      // }
       framebuffer_set_back_to_front(&fb);
+      bonnet_write_multi_data(my_hat, fb.front_buffer, 1024);
       direction_pressed = false;
       x_move = 0;
       y_move = 0;
     }
 
-    usleep(10000);
+    // usleep(10000);
   }
 
   bonnet_write_cmd(my_hat, SET_DISP_OFF);
