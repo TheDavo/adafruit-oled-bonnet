@@ -1,31 +1,10 @@
 #ifndef BONNET_H
 #define BONNET_H
 
+#include "ssd1306.h"
 #include <gpiod.h>
 #include <stdint.h>
-#include "ssd1306.h"
 
-// display driver constants
-#define SET_CONTRAST 0x81
-#define SET_ENTIRE_ON 0xA5
-#define SET_ENTIRE_RAM 0xA4
-#define SET_NORM_INV 0xA6
-#define SET_DISP_ON 0xAF
-#define SET_DISP_OFF 0xAE
-#define SET_MEM_ADDR 0x20
-#define SET_COL_ADDR 0x21
-#define SET_PAGE_ADDR 0x22
-#define SET_DISP_START_LINE 0x40
-#define SET_SEG_REMAP 0xA0
-#define SET_MUX_RATIO 0xA8
-#define SET_IREF_SELECT 0xAD
-#define SET_COM_OUT_DIR 0xC0
-#define SET_DISP_OFFSET 0xD3
-#define SET_COM_PIN_CFG 0xDA
-#define SET_DISP_CLK_DIV 0xD5
-#define SET_PRECHARGE 0xD9
-#define SET_VCOM_DESEL 0xDB
-#define SET_CHARGE_PUMP 0x8D
 #define HEIGHT 64
 #define WIDTH 128
 #define PAGES 8
@@ -46,9 +25,6 @@
 #define CONST_BUTTON_C 4
 
 typedef struct bonnet {
-  int i2cfd;
-  int i2c_addr;
-
   ssd1306_t ssd;
   struct gpiod_chip *gpio_chip;
   struct gpiod_line_bulk buttons;
@@ -144,7 +120,7 @@ int bonnet_write_data(const struct bonnet b, uint8_t data);
  *
  */
 int bonnet_write_multi_data(const struct bonnet b, uint8_t data[],
-                            int count_data);
+                            int lenbytes_data);
 
 // Drawing functions
 
@@ -180,7 +156,7 @@ void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
                                   bool set);
 
 void bonnet_action_write_to_segment(struct bonnet *b, uint8_t page, uint8_t col,
-                                  uint8_t data);
+                                    uint8_t data);
 
 /**
  * bonnet_action_clear_display clears the framebuffer and updates the display.
@@ -192,5 +168,21 @@ void bonnet_action_write_to_segment(struct bonnet *b, uint8_t page, uint8_t col,
 void bonnet_action_clear_display(struct bonnet *b);
 
 void bonnet_display_framebuffer(struct bonnet b);
+
+// GPIO
+
+typedef enum {
+  bonnet_e_button_down = 0,
+  bonnet_e_button_up = 1,
+} bonnet_e_button_state;
+
+// Wrapper Functions
+
+/**
+ * bonnet_set_display_off turns the display off
+ * This is a wrapper functions that writes the correct SSD1306 command
+ * to turn off the display
+ */
+void bonnet_set_display_off(struct bonnet b);
 
 #endif

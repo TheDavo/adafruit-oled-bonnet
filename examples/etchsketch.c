@@ -86,7 +86,7 @@ int main(void) {
     usleep(10000);
   }
   // bonnet_clear_display(my_hat);
-  bonnet_write_cmd(my_hat, SET_DISP_OFF);
+  bonnet_set_display_off(my_hat);
   bonnet_close(&my_hat);
   return 0;
 }

@@ -294,7 +294,7 @@ int main(int argc, char **argv) {
     // usleep(10000);
   }
 
-  bonnet_write_cmd(my_hat, SET_DISP_OFF);
+  bonnet_set_display_off(my_hat);
   bonnet_close(&my_hat);
   free(cursor_pixels);
   return 0;

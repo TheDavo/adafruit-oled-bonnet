@@ -94,10 +94,6 @@ int bonnet_write_multi_cmd(const struct bonnet b, uint8_t cmds[],
 
 int bonnet_write_multi_data(struct bonnet b, uint8_t data[],
                             int lenbytes_data) {
-  // uint8_t *buffer = malloc(lenbytes_data + (sizeof(uint8_t)));
-  // buffer[0] = 0x40;
-  // memcpy(buffer + 1, data, lenbytes_data);
-  // int ret_val = write(b.ssd.i2cfd, buffer, lenbytes_data + sizeof(uint8_t));
   int ret_val = ssd1306_write_data_multi(b.ssd, data, lenbytes_data);
   return ret_val;
 }
@@ -106,7 +102,7 @@ int bonnet_poweron(struct bonnet b) {
   // TODO: For the bonnet, no reset commands are used to to AXP830 chip
   // monitoring the device VCC, for an agnostic driver (which this will
   // eventually become), this function needs to be correctly implemented
-  return ssd1306_write_cmd(b.ssd, SET_DISP_ON);
+  return ssd1306_write_cmd(b.ssd, ssd1306_SET_DISP_ON);
 }
 
 int bonnet_write_to_page(struct bonnet b, uint8_t page, uint8_t start_col,
@@ -123,35 +119,35 @@ int bonnet_write_to_page(struct bonnet b, uint8_t page, uint8_t start_col,
 int bonnet_display_initialize(struct bonnet b) {
   // initialization commands copied from the adafruit bonnet repo
   // https://github.com/adafruit/Adafruit_CircuitPython_SSD1306/blob/main/adafruit_ssd1306.py
-  ssd1306_write_cmd(b.ssd, SET_DISP_OFF);
-  uint8_t mux_ratio_cmds[] = {SET_MUX_RATIO, HEIGHT - 1};
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_DISP_OFF);
+  uint8_t mux_ratio_cmds[] = {ssd1306_SET_MUX_RATIO, HEIGHT - 1};
   ssd1306_write_cmd_multi(b.ssd, mux_ratio_cmds, 2);
-  uint8_t disp_offset_cmds[] = {SET_DISP_OFFSET, 0x00};
+  uint8_t disp_offset_cmds[] = {ssd1306_SET_DISP_OFFSET, 0x00};
   ssd1306_write_cmd_multi(b.ssd, disp_offset_cmds, 2);
-  ssd1306_write_cmd(b.ssd, SET_DISP_START_LINE);
-  ssd1306_write_cmd(b.ssd, SET_SEG_REMAP | 0x01);
-  ssd1306_write_cmd(b.ssd, SET_COM_OUT_DIR | 0x08);
-  uint8_t com_pin_cfg_cmds[] = {SET_COM_PIN_CFG,
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_DISP_START_LINE);
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_SEG_REMAP | 0x01);
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_COM_OUT_DIR | 0x08);
+  uint8_t com_pin_cfg_cmds[] = {ssd1306_SET_COM_PIN_CFG,
                                 WIDTH > (HEIGHT * 2) ? 0x02 : 0x12};
   ssd1306_write_cmd_multi(b.ssd, com_pin_cfg_cmds, 2);
-  uint8_t contrast_cmds[] = {SET_CONTRAST, 0x03};
+  uint8_t contrast_cmds[] = {ssd1306_SET_CONTRAST, 0x03};
   ssd1306_write_cmd_multi(b.ssd, contrast_cmds, 2);
-  ssd1306_write_cmd(b.ssd, SET_ENTIRE_RAM);
-  uint8_t disp_clk_div_cmds[] = {SET_DISP_CLK_DIV, 0x80};
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_ENTIRE_RAM);
+  uint8_t disp_clk_div_cmds[] = {ssd1306_SET_DISP_CLK_DIV, 0x80};
   ssd1306_write_cmd_multi(b.ssd, disp_clk_div_cmds, 2);
-  uint8_t precharge_cmds[] = {SET_PRECHARGE, 0xF1};
+  uint8_t precharge_cmds[] = {ssd1306_SET_PRECHARGE, 0xF1};
   ssd1306_write_cmd_multi(b.ssd, precharge_cmds, 2);
-  uint8_t mem_cmds[] = {SET_MEM_ADDR, 0b00};
+  uint8_t mem_cmds[] = {ssd1306_SET_MEM_ADDR, 0b00};
   ssd1306_write_cmd_multi(b.ssd, mem_cmds, 2);
-  uint8_t vcom_desel_cmds[] = {SET_VCOM_DESEL, 0x30}; // no external Vcc
+  uint8_t vcom_desel_cmds[] = {ssd1306_SET_VCOM_DESEL, 0x30}; // no external Vcc
   ssd1306_write_cmd_multi(b.ssd, vcom_desel_cmds, 2);
-  ssd1306_write_cmd(b.ssd, SET_NORM_INV);
-  uint8_t iref_select_cmds[] = {SET_IREF_SELECT, 0x30};
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_NORM_INV);
+  uint8_t iref_select_cmds[] = {ssd1306_SET_IREF_SELECT, 0x30};
   ssd1306_write_cmd_multi(b.ssd, iref_select_cmds, 2);
-  uint8_t chargepump_cmds[] = {SET_CHARGE_PUMP, 0x14};
+  uint8_t chargepump_cmds[] = {ssd1306_SET_CHARGE_PUMP, 0x14};
   ssd1306_write_cmd_multi(b.ssd, chargepump_cmds, 2);
   usleep(1000);
-  ssd1306_write_cmd(b.ssd, SET_DISP_ON);
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_DISP_ON);
   bonnet_action_clear_display(&b);
 
   return (0);
@@ -195,14 +191,6 @@ void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
 
 }
 
-void bonnet_display_framebuffer(struct bonnet b) {
-  for (int i = 0; i < HEIGHT; i++) {
-    for (int j = 0; j < WIDTH; j++) {
-      printf("%d", b.framebuffer[i * WIDTH + j]);
-    }
-    printf("\n");
-  }
-}
 void bonnet_action_write_to_segment(struct bonnet *b, uint8_t page, uint8_t col,
                                   uint8_t data) {
   ssd1306_write_data_to_segment(b->ssd, page, col, data);
@@ -215,4 +203,14 @@ void bonnet_action_clear_display(struct bonnet *b) {
   ssd1306_write_cmd_multi(b->ssd, cmds, sizeof(cmds));
   memset(b->framebuffer, 0x00, sizeof(b->framebuffer));
   ssd1306_write_data_multi(b->ssd, b->framebuffer, sizeof(b->framebuffer));
+}
+
+// GPIO Commands
+
+
+
+// Wrapper Commands
+
+void bonnet_set_display_off(struct bonnet b) {
+  ssd1306_write_cmd(b.ssd, ssd1306_SET_DISP_OFF);
 }
