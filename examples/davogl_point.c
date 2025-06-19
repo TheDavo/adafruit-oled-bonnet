@@ -35,18 +35,31 @@ int main(void) {
       davo_gl_set_pixel_to(davo, x, y, pixel);
       // davo_gl_print("mono_buffer[%d][%d] value %d\n", x, y,
       //               davo->framebuf.buffer.mono_buffer[y * davo->width + x]);
-      bonnet_action_write_to_pixel(
-          &my_hat, x, y,
-          davo->framebuf.buffer.mono_buffer[y * davo->width + x]);
+      // bonnet_action_write_to_pixel(
+      //     &my_hat, x, y,
+      //     davo->framebuf.buffer.mono_buffer[y * davo->width + x]);
     }
   }
 
+  uint8_t *fb_as_uint8t = davo_gl_uint8t_arr_from_monochrome_nullable(*davo);
+  if (NULL == fb_as_uint8t) {
+    davo_gl_free(davo);
+
+    // sleep(1);
+    bonnet_action_clear_display(&my_hat);
+    bonnet_close(&my_hat);
+    return (-1);
+  }
+
+  bonnet_write_multi_data(my_hat, fb_as_uint8t,
+                          (davo->height * davo->width) / 8);
+
   davo_gl_free(davo);
 
-  sleep(1);
+  // sleep(1);
   bonnet_action_clear_display(&my_hat);
   bonnet_close(&my_hat);
-  
-  
+  free(fb_as_uint8t);
+
   return (0);
 }

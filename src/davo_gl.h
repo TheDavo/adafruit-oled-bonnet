@@ -41,4 +41,6 @@ void davo_gl_free(struct davo_gl *davo_gl);
 void davo_gl_set_pixel_to(struct davo_gl *davo_gl, int x, int y,
                           davo_gl_pixel_u pixel);
 
+uint8_t* davo_gl_uint8t_arr_from_monochrome_nullable(struct davo_gl davo_gl);
+
 #endif
