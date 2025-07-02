@@ -6,6 +6,7 @@ libs =-lgpiod
 examples_dir=./examples/
 etchsketch_src=./examples/etchsketch.c
 cursor_src=./examples/cursor.c
+pong_src=./examples/pong.c
 davogl_point_src=./examples/davogl_point.c
 src_dir =src
 srcs = $(wildcard ./src/*.c)
@@ -21,6 +22,9 @@ cursor.out:  $(cursor_src) $(srcs)
 
 davogl_point.out:  $(davogl_point_src) $(srcs)
 	$(CC) -o davogl_point.out $(davogl_point_src) $(srcs) $(errors) $(libs)
+
+pong.out:  $(pong_src) $(srcs)
+	$(CC) -o pong.out $(pong_src) $(srcs) $(errors) $(libs) -g
 
 clean:
 	rm *.out
