@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include "ssd1306_gl.h"
+
 // display driver constants
 #define ssd1306_SET_CONTRAST 0x81
 #define ssd1306_SET_ENTIRE_ON 0xA5
@@ -31,12 +33,11 @@
 #define ssd1306_PAGE_HEIGHT 8
 // #define FRAMEBUFFER_SIZE ((HEIGHT * WIDTH) / (PAGE_HEIGHT))
 
-typedef struct {
+typedef struct ssd1306 {
   int i2cfd;
   uint8_t i2c_addr;
   // int reset_gpio;
-  // uint8_t height;
-  // uint8_t width;
+  ssd1306_fb_t *framebuf;
 } ssd1306_t;
 
 /**
