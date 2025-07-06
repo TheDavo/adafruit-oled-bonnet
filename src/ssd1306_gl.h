@@ -40,7 +40,7 @@ void ssd1306_fb_free(ssd1306_fb_t *self);
 /**
  * ssd1306_fb_clear_buffer calls memset on the buffer to set the entire buffer
  * to `color`
- * 
+ *
  */
 void ssd1306_fb_clear_buffer(ssd1306_fb_t *self, bool color);
 
@@ -81,14 +81,14 @@ void ssd1306_fb_draw_line_polar(ssd1306_fb_t *self, int x0, int y0,
                                 uint32_t len, int angle, bool color);
 
 /**
- * ssd1306_fb_draw_rect draws a rectangle, taking in inputs for the corners of
- * the rectangle `tl (top left)`, `tr (top right)`, `br (bottom right)`,
- * `bl (bottom left)` and draws it with the color `color`, and draws a filled
+ * ssd1306_fb_draw_rect draws a rectangle, taking in inputs for two of the
+ * corners the corners of the rectangle `tl (top left)`, `br (bottom right)`,
+ * and draws it with the color `color`, and draws a filled
  * rectangle if `fill` is true
  *
  */
-void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl, int tr, int br, int bl,
-                          bool color, bool fill);
+void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl, int br, bool color,
+                          bool fill);
 
 /**
  * ssd1306_fb_draw_circle draws a circle with origin (`x0, y0`) and a radius
@@ -97,7 +97,6 @@ void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl, int tr, int br, int bl,
  */
 void ssd1306_fb_draw_circle(ssd1306_fb_t *self, int x0, int y0, int radius,
                             bool color, bool fill);
-
 
 /**
  * ssd1306_fb_draw_arc draws an arc from what would be a circle with origin
@@ -111,7 +110,7 @@ void ssd1306_fb_draw_circle(ssd1306_fb_t *self, int x0, int y0, int radius,
  * path from `arc_start_angle` to `arc_finish_angle`
  */
 void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
-                         int arc_start_angle, int arc_finish_angle,
-                         bool color, bool fill, bool longer_path);
+                         int arc_start_angle, int arc_finish_angle, bool color,
+                         bool fill, bool longer_path);
 
 #endif

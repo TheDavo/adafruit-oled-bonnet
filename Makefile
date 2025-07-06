@@ -33,6 +33,8 @@ set_pixel.out: $(srcs) ./tests_gl/set_pixel.c
 	$(CC) -o set_pixel.out ./tests_gl/set_pixel.c $(srcs) $(errors) $(libs)
 draw_line.out: $(srcs) ./tests_gl/draw_line.c
 	$(CC) -o draw_line.out ./tests_gl/draw_line.c $(srcs) $(errors) $(libs) -lm
+draw_circle.out: $(srcs) ./tests_gl/draw_circle.c
+	$(CC) -o draw_circle.out ./tests_gl/draw_circle.c $(srcs) $(errors) $(libs) -lm
 
 clean:
 	rm *.out
