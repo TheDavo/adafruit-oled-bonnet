@@ -2,16 +2,18 @@
 
 CC=gcc
 errors=-Wall -Werror
-libs =-lgpiod
+libs=-lgpiod
 examples_dir=./examples/
 etchsketch_src=./examples/etchsketch.c
 cursor_src=./examples/cursor.c
 pong_src=./examples/pong.c
 davogl_point_src=./examples/davogl_point.c
-src_dir =src
-srcs = $(wildcard ./src/*.c)
+src_dir=src
+tests_gl_dir=tests_gl
+srcs=$(wildcard ./src/*.c)
+tests=$(wildcard ./tests_gl/*.c)
 
-.PHONY = all clean
+.PHONY = all clean test
 all: etchsketch.out cursor.out davogl_point.out
 
 etchsketch.out: $(etchsketch_src) $(srcs)
@@ -25,6 +27,12 @@ davogl_point.out:  $(davogl_point_src) $(srcs)
 
 pong.out:  $(pong_src) $(srcs)
 	$(CC) -o pong.out $(pong_src) $(srcs) $(errors) $(libs) -g
+
+# tests:
+set_pixel.out: $(srcs) ./tests_gl/set_pixel.c
+	$(CC) -o set_pixel.out ./tests_gl/set_pixel.c $(srcs) $(errors) $(libs)
+draw_line.out: $(srcs) ./tests_gl/draw_line.c
+	$(CC) -o draw_line.out ./tests_gl/draw_line.c $(srcs) $(errors) $(libs) -lm
 
 clean:
 	rm *.out

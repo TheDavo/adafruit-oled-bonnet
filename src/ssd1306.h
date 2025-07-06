@@ -48,7 +48,8 @@ typedef struct ssd1306 {
  *
  * Returns (-1) on error or (0) on success
  */
-int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c);
+int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c,
+                        ssd1306_display_size_e display_size);
 
 /**
  * ssd1306_free closes the file descriptor to the I2C channel
@@ -86,6 +87,13 @@ int ssd1306_write_cmd_multi(ssd1306_t ssd, uint8_t *cmds, int cmd_sizeof);
  *
  */
 int ssd1306_write_data(ssd1306_t ssd, uint8_t data);
+
+/**
+ * ssd1306_write_framebuffer_all writes the framebuffer in the `ssd` struct
+ * to the display driver's GDDRAM
+ *
+ */
+int ssd1306_write_framebuffer_all(ssd1306_t ssd);
 
 /**
  * ssd1306_write_multi_data writes the data in *data to the display driver,

@@ -12,7 +12,9 @@
 #include <unistd.h>
 
 #include "ssd1306.h"
-int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c) {
+#include "ssd1306_gl.h"
+int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c,
+                        ssd1306_display_size_e display_size) {
   if (dev_i2c == NULL || ssd == NULL) {
     return (-1);
   }
@@ -32,10 +34,18 @@ int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c) {
     return (-1);
   }
 
+  ssd1306_fb_t *fb = ssd1306_fb_new(display_size, false);
+  if (!fb) {
+    return (-1);
+  }
+  ssd->framebuf = fb;
   return (0);
 }
 
-void ssd1306_free(ssd1306_t ssd) { close(ssd.i2cfd); }
+void ssd1306_free(ssd1306_t ssd) {
+  close(ssd.i2cfd);
+  ssd1306_fb_free(ssd.framebuf);
+}
 
 int ssd1306_write_cmd(ssd1306_t ssd, uint8_t cmd) {
   // Section 8.1.5.2 of SSD1306 datasheet
@@ -92,6 +102,15 @@ int ssd1306_write_data_multi(ssd1306_t ssd, uint8_t *data, int data_sizeof) {
   return bytes_written;
 }
 
+int ssd1306_write_framebuffer_all(ssd1306_t ssd) {
+
+  // uint8_t data_start[1] = {0x40};
+  // write(ssd.i2cfd, data_start, sizeof(data_start));
+  // int bytes_written = write(ssd.i2cfd, ssd.framebuf->framebuf,
+  //                           (ssd.framebuf->height * ssd.framebuf->width) / 8);
+  // return bytes_written;
+  return ssd1306_write_data_multi(ssd, ssd.framebuf->framebuf, 1024);
+}
 int ssd1306_write_data_to_segment(ssd1306_t ssd, uint8_t page, uint8_t segment,
                                   uint8_t data) {
 
