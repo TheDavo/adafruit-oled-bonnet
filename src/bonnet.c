@@ -1,5 +1,6 @@
 #include "bonnet.h"
 #include "ssd1306.h"
+#include "ssd1306_gl.h"
 #include <fcntl.h>
 #include <gpiod.h>
 #include <linux/gpio.h>
@@ -53,7 +54,8 @@ int bonnet_struct_init(struct bonnet *b, uint8_t bonnet_i2c_addr) {
 
   char *i2c_filename = "/dev/i2c-1";
   char *gpio_chipname = "gpiochip0";
-  ssd1306_struct_init(&b->ssd, bonnet_i2c_addr, i2c_filename);
+  ssd1306_struct_init(&b->ssd, bonnet_i2c_addr, i2c_filename,
+                      ssd1306_display_size_128_64);
 
   printf("opening gpio\n");
   if ((b->gpio_chip = gpiod_chip_open_by_name(gpio_chipname)) == NULL) {
@@ -188,11 +190,10 @@ void bonnet_action_write_to_pixel(struct bonnet *b, uint8_t x, uint8_t y,
   bonnet__set_framebuffer_data_at(b, x, y, new_col_byte);
 
   ssd1306_write_data_to_segment(b->ssd, page, x, new_col_byte);
-
 }
 
 void bonnet_action_write_to_segment(struct bonnet *b, uint8_t page, uint8_t col,
-                                  uint8_t data) {
+                                    uint8_t data) {
   ssd1306_write_data_to_segment(b->ssd, page, col, data);
 }
 
@@ -206,8 +207,6 @@ void bonnet_action_clear_display(struct bonnet *b) {
 }
 
 // GPIO Commands
-
-
 
 // Wrapper Commands
 
