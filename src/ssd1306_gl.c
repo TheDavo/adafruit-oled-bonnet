@@ -96,7 +96,7 @@ void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, uint8_t x, uint8_t y,
     return;
   }
 
-  if (!ssd1306_fb_bounds_check(*self, x, y)){
+  if (!ssd1306_fb_bounds_check(*self, x, y)) {
     return;
   }
 
@@ -200,6 +200,33 @@ void ssd1306_fb_draw_line_polar(ssd1306_fb_t *self, int x0, int y0,
   int x = x0 + (int)(cos(rad) * len);
   int y = y0 - (int)(sin(rad) * len);
   ssd1306_fb_draw_line_carte(self, x0, y0, x, y, color);
+}
+
+void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl_x, int tl_y,
+                          uint32_t length, uint32_t height, bool color,
+                          bool fill) {
+  int tr_x = tl_x + length;
+  int tr_y = tl_y;
+  int br_x = tl_x + length;
+  int br_y = tl_y + height;
+  int bl_x = tl_x;
+  int bl_y = tl_y + height;
+
+  // top horiz line
+  ssd1306_fb_draw_line_carte(self, tl_x, tl_y, tr_x, tr_y, color);
+  // left vert line
+  ssd1306_fb_draw_line_carte(self, tl_x, tl_y, bl_x, bl_y, color);
+  // right vert line
+  ssd1306_fb_draw_line_carte(self, tr_x, tr_y, br_x, br_y, color);
+  // bottom horiz line
+  ssd1306_fb_draw_line_carte(self, bl_x, bl_y, br_x, br_y, color);
+
+  if (fill) {
+    for (int fill_y = tl_y; fill_y < bl_y; fill_y++) {
+      ssd1306_fb_draw_line_carte(self, tl_x, tl_y + fill_y, tr_x, tr_y + fill_y,
+                                 color);
+    }
+  }
 }
 
 //

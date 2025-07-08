@@ -35,6 +35,8 @@ draw_line.out: $(srcs) ./tests_gl/draw_line.c
 	$(CC) -o draw_line.out ./tests_gl/draw_line.c $(srcs) $(errors) $(libs) -lm
 draw_circle.out: $(srcs) ./tests_gl/draw_circle.c
 	$(CC) -o draw_circle.out ./tests_gl/draw_circle.c $(srcs) $(errors) $(libs) -lm
+draw_rect.out: $(srcs) ./tests_gl/draw_rect.c
+	$(CC) -o draw_rect.out ./tests_gl/draw_rect.c $(srcs) $(errors) $(libs) -lm
 
 clean:
 	rm *.out

@@ -81,13 +81,14 @@ void ssd1306_fb_draw_line_polar(ssd1306_fb_t *self, int x0, int y0,
                                 uint32_t len, int angle, bool color);
 
 /**
- * ssd1306_fb_draw_rect draws a rectangle, taking in inputs for two of the
- * corners the corners of the rectangle `tl (top left)`, `br (bottom right)`,
- * and draws it with the color `color`, and draws a filled
+ * ssd1306_fb_draw_rect draws a rectangle, taking in inputs for the top left
+ * corner `tl_x (top left x)`, `tl_y (top left y)`, its `width` and `height`,
+ * draws it with the color `color`, and draws a filled
  * rectangle if `fill` is true
  *
  */
-void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl, int br, bool color,
+void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl_x, int tl_y,
+                          uint32_t length, uint32_t height, bool color,
                           bool fill);
 
 /**
