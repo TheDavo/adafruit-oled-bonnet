@@ -107,11 +107,12 @@ void ssd1306_fb_draw_circle(ssd1306_fb_t *self, int x0, int y0, int radius,
  * If `fill` is true, the function draws a "slice" of a filled circle rather
  * than just an arc
  *
- * If `longer_path` is true, the function will draw the arc taking the longer
- * path from `arc_start_angle` to `arc_finish_angle`
+ * `resolution` sets the step size from `arc_start_angle` to `arc_finish_angle`
+ * the lower `resolution` is, the finer the drawing
+ *
  */
 void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
-                         int arc_start_angle, int arc_finish_angle, bool color,
-                         bool fill, bool longer_path);
+                         uint16_t arc_start_angle, uint16_t arc_finish_angle,
+                         bool color, bool fill, uint8_t resolution);
 
 #endif

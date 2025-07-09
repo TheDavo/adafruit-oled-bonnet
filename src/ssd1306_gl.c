@@ -230,7 +230,7 @@ void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl_x, int tl_y,
 }
 
 //
-// implemenation of the draw_circle function is thanks to the explanation
+// implementation of the draw_circle function is thanks to the explanation
 // video from NoBS code:
 // https://youtu.be/hpiILbMkF9w?si=7yMTLhzgZev_Oumi
 //
@@ -267,5 +267,44 @@ void ssd1306_fb_draw_circle(ssd1306_fb_t *self, int x0, int y0, int radius,
     }
 
     x += 1;
+  }
+}
+
+void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
+                         uint16_t arc_start_angle, uint16_t arc_finish_angle,
+                         bool color, bool fill, uint8_t resolution) {
+
+  if (arc_start_angle == arc_finish_angle) {
+    return;
+  }
+
+  if (resolution == 0) {
+    return;
+  }
+
+  double rad;
+  int x;
+  int y;
+
+  // always go from start angle to finish angle
+  // to make the math easier and not have to do modulus complications
+  // if the finish angle is less than the start, add a whole rotationm
+  // sin and cos do not care!
+  if (arc_finish_angle < arc_start_angle) {
+    arc_start_angle += 360;
+    int temp = arc_finish_angle;
+    arc_finish_angle = arc_start_angle;
+    arc_start_angle = temp;
+  }
+
+  for (int ang = arc_start_angle; ang <= arc_finish_angle; ang += resolution) {
+    // convert angle to radians to use sin and cos functions
+    rad = (double)(ang * M_PI / 180.0);
+    x = x0 + cos(rad) * radius;
+    y = y0 + sin(rad) * radius;
+    ssd1306_fb_draw_pixel(self, x, y, color);
+    if (fill) {
+      ssd1306_fb_draw_line_polar(self, x0, y0, radius, ang, color);
+    }
   }
 }
