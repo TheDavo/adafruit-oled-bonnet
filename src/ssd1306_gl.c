@@ -308,3 +308,11 @@ void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
     }
   }
 }
+
+void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_point_t v1,
+                              ssd1306_fb_point_t v2, ssd1306_fb_point_t v3,
+                              bool color) {
+  ssd1306_fb_draw_line_carte(self, v1.x, v1.y, v2.x, v2.y, color);
+  ssd1306_fb_draw_line_carte(self, v2.x, v2.y, v3.x, v3.y, color);
+  ssd1306_fb_draw_line_carte(self, v1.x, v1.y, v3.x, v3.y, color);
+}

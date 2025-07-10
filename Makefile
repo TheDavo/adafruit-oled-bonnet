@@ -39,6 +39,8 @@ draw_rect.out: $(srcs) ./tests_gl/draw_rect.c
 	$(CC) -o draw_rect.out ./tests_gl/draw_rect.c $(srcs) $(errors) $(libs) -lm
 draw_arc.out: $(srcs) ./tests_gl/draw_arc.c
 	$(CC) -o draw_arc.out ./tests_gl/draw_arc.c $(srcs) $(errors) $(libs) -lm
+draw_triangle.out: $(srcs) ./tests_gl/draw_triangle.c
+	$(CC) -o draw_triangle.out ./tests_gl/draw_triangle.c $(srcs) $(errors) $(libs) -lm
 
 clean:
 	rm *.out

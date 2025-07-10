@@ -7,6 +7,11 @@
 
 #define ssd1306_gl_PAGE_HEIGHT 8
 
+typedef struct ssd1306_fb_point {
+  int x;
+  int y;
+} ssd1306_fb_point_t;
+
 typedef struct ssd1306_fb {
   uint8_t height;
   uint8_t width;
@@ -115,4 +120,7 @@ void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
                          uint16_t arc_start_angle, uint16_t arc_finish_angle,
                          bool color, bool fill, uint8_t resolution);
 
+void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_point_t v1,
+                              ssd1306_fb_point_t v2, ssd1306_fb_point_t v3,
+                              bool color);
 #endif
