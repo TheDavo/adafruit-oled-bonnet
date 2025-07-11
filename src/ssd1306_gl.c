@@ -309,10 +309,59 @@ void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
   }
 }
 
-void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_point_t v1,
-                              ssd1306_fb_point_t v2, ssd1306_fb_point_t v3,
-                              bool color) {
+int edge_cross(ssd1306_fb_vec2_t a, ssd1306_fb_vec2_t b, ssd1306_fb_vec2_t p) {
+  ssd1306_fb_vec2_t ab = {
+      .x = b.x - a.x,
+      .y = b.y - a.y,
+  };
+  ssd1306_fb_vec2_t ap = {
+      .x = p.x - a.x,
+      .y = p.y - a.y,
+  };
+  return (ab.x * ap.y) - (ab.y * ap.x);
+}
+
+int min(int a, int b) {
+  if (a <= b) {
+    return a;
+  }
+
+  return b;
+}
+
+int max(int a, int b) {
+  if (a >= b) {
+    return a;
+  }
+
+  return b;
+}
+
+void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
+                              ssd1306_fb_vec2_t v1, ssd1306_fb_vec2_t v2,
+                              bool color, bool fill) {
+  ssd1306_fb_draw_line_carte(self, v0.x, v0.y, v1.x, v1.y, color);
   ssd1306_fb_draw_line_carte(self, v1.x, v1.y, v2.x, v2.y, color);
-  ssd1306_fb_draw_line_carte(self, v2.x, v2.y, v3.x, v3.y, color);
-  ssd1306_fb_draw_line_carte(self, v1.x, v1.y, v3.x, v3.y, color);
+  ssd1306_fb_draw_line_carte(self, v0.x, v0.y, v2.x, v2.y, color);
+
+  if (fill) {
+    int x_min = min(min(v0.x, v1.x), v2.x);
+    int y_min = min(min(v0.y, v1.y), v2.y);
+    int x_max = max(max(v0.x, v1.x), v2.x);
+    int y_max = max(max(v0.y, v1.y), v2.y);
+
+    for (int y = y_min; y <= y_max; y++) {
+      for (int x = x_min; x <= x_max; x++) {
+        ssd1306_fb_vec2_t p = {x, y};
+        int w0 = edge_cross(v0, v1, p);
+        int w1 = edge_cross(v1, v2, p);
+        int w2 = edge_cross(v2, v0, p);
+
+        bool is_inside = w0 >= 0 && w1 >= 0 && w2 >= 0;
+        if (is_inside) {
+          ssd1306_fb_draw_pixel(self, x, y, color);
+        }
+      }
+    }
+  }
 }

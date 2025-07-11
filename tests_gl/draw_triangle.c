@@ -21,25 +21,34 @@ int main(void) {
   int width = my_hat.ssd.framebuf->width;
   // int height = my_hat.ssd.framebuf->height;
 
-  ssd1306_fb_point_t v1 = {
+  ssd1306_fb_vec2_t v1 = {
     .x = 10,
     .y = 10,
   };
 
-  ssd1306_fb_point_t v2 = {
+  ssd1306_fb_vec2_t v2 = {
     .x = width - 10,
     .y = 10,
   };
 
-  ssd1306_fb_point_t v3 = {
+  ssd1306_fb_vec2_t v3 = {
     .x = 45,
-    .y = 60,
+    .y = 45,
   };
 
   for (int v3x = 10; v3x <= width - 10; v3x += 4) {
     ssd1306_fb_clear_buffer(my_hat.ssd.framebuf, false);
     v3.x = v3x;
-    ssd1306_fb_draw_triangle(my_hat.ssd.framebuf, v1, v2, v3, true);
+    ssd1306_fb_draw_triangle(my_hat.ssd.framebuf, v1, v2, v3, true, true);
+    ssd1306_fb_draw_circle(my_hat.ssd.framebuf, v3.x, v3.y, 5, true, false);
+    ssd1306_write_framebuffer_all(my_hat.ssd);
+  }
+
+  for (int v3x = width - 10; v3x >= 10; v3x -= 4) {
+  ssd1306_fb_clear_buffer(my_hat.ssd.framebuf, true);
+    v3.x = v3x;
+    ssd1306_fb_draw_triangle(my_hat.ssd.framebuf, v1, v2, v3, false, true);
+    ssd1306_fb_draw_circle(my_hat.ssd.framebuf, v3.x, v3.y, 5, false, false);
     ssd1306_write_framebuffer_all(my_hat.ssd);
   }
 
