@@ -309,18 +309,6 @@ void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
   }
 }
 
-int edge_cross(ssd1306_fb_vec2_t a, ssd1306_fb_vec2_t b, ssd1306_fb_vec2_t p) {
-  ssd1306_fb_vec2_t ab = {
-      .x = b.x - a.x,
-      .y = b.y - a.y,
-  };
-  ssd1306_fb_vec2_t ap = {
-      .x = p.x - a.x,
-      .y = p.y - a.y,
-  };
-  return (ab.x * ap.y) - (ab.y * ap.x);
-}
-
 int min(int a, int b) {
   if (a <= b) {
     return a;
@@ -335,6 +323,24 @@ int max(int a, int b) {
   }
 
   return b;
+}
+
+//
+// major thanks to Pikuma's video on triangle rasterization for helping
+// understand and refresh ideas on cross products of vector and its meaning
+// and how that can be used to determine if a point is "inside" the triangle
+// https://www.youtube.com/watch?v=k5wtuKWmV48
+//
+int edge_cross(ssd1306_fb_vec2_t a, ssd1306_fb_vec2_t b, ssd1306_fb_vec2_t p) {
+  ssd1306_fb_vec2_t ab = {
+      .x = b.x - a.x,
+      .y = b.y - a.y,
+  };
+  ssd1306_fb_vec2_t ap = {
+      .x = p.x - a.x,
+      .y = p.y - a.y,
+  };
+  return (ab.x * ap.y) - (ab.y * ap.x);
 }
 
 void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
@@ -362,6 +368,95 @@ void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
           ssd1306_fb_draw_pixel(self, x, y, color);
         }
       }
+    }
+  }
+}
+
+//
+// the idea for this algorithm is to mix Bresenham's line and circle algorithms
+// to draw the ellipse
+//
+// depending on the ellipse size, the x or y value will be changing faster
+// than the other, and using that logic the previous algorithms can be modified
+// to plot the points without having issues skiping points
+//
+// this is similar to how the line algorithms swap the x and y line inputs
+// depending on the slope of the line (is it more horizontal or vertical?)
+// 
+void ssd1306_fb_draw_ellipse(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
+                             uint8_t x_radius, uint8_t y_radius, bool color,
+                             bool fill) {
+  int x, y, x_change, y_change, ellipse_error, two_a_square, two_b_square;
+  int stopping_x, stopping_y;
+
+  two_a_square = 2 * x_radius * x_radius;
+  two_b_square = 2 * y_radius * y_radius;
+
+  x = x_radius;
+  y = 0;
+
+  x_change = y_radius * y_radius * (1 - 2 * x_radius);
+  y_change = x_radius * x_radius;
+  ellipse_error = 0;
+  stopping_x = two_b_square * x_radius;
+  stopping_y = 0;
+
+  while (stopping_x >= stopping_y) {
+    ssd1306_fb_draw_pixel(self, origin.x + x, origin.y + y, color);
+    ssd1306_fb_draw_pixel(self, origin.x - x, origin.y + y, color);
+    ssd1306_fb_draw_pixel(self, origin.x - x, origin.y - y, color);
+    ssd1306_fb_draw_pixel(self, origin.x + x, origin.y - y, color);
+    if (fill) {
+      ssd1306_fb_draw_line_carte(self, origin.x + x, origin.y + y, origin.x - x,
+                                 origin.y + y, color);
+      ssd1306_fb_draw_line_carte(self, origin.x + x, origin.y - y, origin.x - x,
+                                 origin.y - y, color);
+    }
+
+    y++;
+    stopping_y += two_a_square;
+    ellipse_error += y_change;
+    y_change += two_a_square;
+    if ((2 * ellipse_error + x_change) > 0) {
+      x--;
+      stopping_x -= two_b_square;
+      ellipse_error += x_change;
+      x_change += two_b_square;
+    }
+  }
+
+  // first set of points done, start the second set of points
+
+  x = 0;
+  y = y_radius;
+  x_change = y_radius * y_radius;
+  y_change = x_radius * x_radius * (1 - 2 * y_radius);
+  ellipse_error = 0;
+  stopping_x = 0;
+  stopping_y = two_a_square * y_radius;
+
+  while (stopping_x <= stopping_y) {
+    ssd1306_fb_draw_pixel(self, origin.x + x, origin.y + y, color);
+    ssd1306_fb_draw_pixel(self, origin.x - x, origin.y + y, color);
+    ssd1306_fb_draw_pixel(self, origin.x - x, origin.y - y, color);
+    ssd1306_fb_draw_pixel(self, origin.x + x, origin.y - y, color);
+    if (fill) {
+      ssd1306_fb_draw_line_carte(self, origin.x + x, origin.y + y, origin.x - x,
+                                 origin.y + y, color);
+      ssd1306_fb_draw_line_carte(self, origin.x + x, origin.y - y, origin.x - x,
+                                 origin.y - y, color);
+    }
+
+    x++;
+    stopping_x += two_b_square;
+    ellipse_error += x_change;
+    x_change += two_b_square;
+
+    if ((2 * ellipse_error + y_change) > 0) {
+      y--;
+      stopping_y -= two_a_square;
+      ellipse_error += y_change;
+      y_change += two_a_square;
     }
   }
 }

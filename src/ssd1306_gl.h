@@ -120,7 +120,25 @@ void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
                          uint16_t arc_start_angle, uint16_t arc_finish_angle,
                          bool color, bool fill, uint8_t resolution);
 
+/**
+ * ssd1306_fb_draw_triangle takes in three vertices as inputs and draws the
+ * lines from v0 -> v1, v1 -> v2, v2 -> v0 with `color` and fills in the
+ * triangle if `fill` is `true` 
+ *
+ */
 void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
                               ssd1306_fb_vec2_t v1, ssd1306_fb_vec2_t v2,
                               bool color, bool fill);
+
+/**
+ * ssd1306_fb_draw_ellipse draws a triangle from `origin` with height `height`
+ * and width `width`, drawing the ellipse with `color` and is filled if
+ * `fill` is true with `color`
+ *
+ * Algorithm learned from https://dai.fmph.uniba.sk/upload/0/01/Ellipse.pdf
+ *
+ */
+void ssd1306_fb_draw_ellipse(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
+                             uint8_t x_radius, uint8_t y_radius, bool color,
+                             bool fill);
 #endif
