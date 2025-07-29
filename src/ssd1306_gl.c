@@ -223,7 +223,7 @@ void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl_x, int tl_y,
 
   if (fill) {
     for (int fill_y = tl_y; fill_y < bl_y; fill_y++) {
-      ssd1306_fb_draw_line_carte(self, tl_x, tl_y + fill_y, tr_x, tr_y + fill_y,
+      ssd1306_fb_draw_line_carte(self, tl_x, fill_y, tr_x, fill_y,
                                  color);
     }
   }

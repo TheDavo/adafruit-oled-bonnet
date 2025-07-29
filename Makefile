@@ -11,6 +11,7 @@ davogl_point_src=./examples/davogl_point.c
 src_dir=src
 tests_gl_dir=tests_gl
 srcs=$(wildcard ./src/*.c)
+uic_srcs=$(wildcard ./src/uic/*.c)
 tests=$(wildcard ./tests_gl/*.c)
 
 .PHONY = all clean test
@@ -44,5 +45,8 @@ draw_triangle.out: $(srcs) ./tests_gl/draw_triangle.c
 draw_ellipse.out: $(srcs) ./tests_gl/draw_ellipse.c
 	$(CC) -o draw_ellipse.out ./tests_gl/draw_ellipse.c $(srcs) $(errors) $(libs) -lm
 
+
+progress_bar.out: $(srcs) $(uic_srcs) ./tests_gl/uic_progress_bar.c
+	$(CC) -o progress_bar.out ./tests_gl/uic_progress_bar.c $(srcs) $(uic_srcs) $(errors) $(libs) -lm -g
 clean:
 	rm *.out
