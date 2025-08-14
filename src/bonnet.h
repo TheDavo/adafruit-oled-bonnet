@@ -24,6 +24,14 @@
 #define CONST_BUTTON_D 22
 #define CONST_BUTTON_C 4
 
+#define BONNET_BUTTON_IDX_A 0
+#define BONNET_BUTTON_IDX_B 1
+#define BONNET_BUTTON_IDX_CENTER 2
+#define BONNET_BUTTON_IDX_DOWN 3
+#define BONNET_BUTTON_IDX_LEFT 4
+#define BONNET_BUTTON_IDX_RIGHT 5
+#define BONNET_BUTTON_IDX_UP 6
+
 typedef struct bonnet {
   ssd1306_t ssd;
   struct gpiod_chip *gpio_chip;
@@ -47,7 +55,7 @@ int bonnet_struct_init(struct bonnet *b, uint8_t bonnet_i2c_addr);
  *  bonnet_close is the destructor to the bonnet, it handles releasing
  *  the gpio lines and chip, and closing the I2C file descriptor.
  *
- *  This function will also free @param b and set it to NULL
+ *  This function will also free `b` and set it to NULL
  *
  * Returns (-1) on failure and (0) on success
  *
@@ -172,9 +180,59 @@ void bonnet_display_framebuffer(struct bonnet b);
 // GPIO
 
 typedef enum {
-  bonnet_e_button_down = 0,
-  bonnet_e_button_up = 1,
+  bonnet_e_button_state_down = 0,
+  bonnet_e_button_state_up = 1,
 } bonnet_e_button_state;
+
+/**
+ * bonnet_e_button is a wrapper on the button macro values, and represent
+ * the GPIO offsets on the Raspberry Pi 4
+ *
+ */
+typedef enum {
+  bonnet_e_button_a = CONST_BUTTON_A,
+  bonnet_e_button_b = CONST_BUTTON_B,
+  bonnet_e_button_center = CONST_BUTTON_C,
+  bonnet_e_button_down = CONST_BUTTON_D,
+  bonnet_e_button_left = CONST_BUTTON_L,
+  bonnet_e_button_right = CONST_BUTTON_R,
+  bonnet_e_button_up = CONST_BUTTON_U,
+} bonnet_e_button;
+
+/**
+ * bonnet_get_button_state calls the appropriate `gpiod` function to get the
+ * state of `button`, if that button is up or down
+ *
+ */
+bonnet_e_button_state bonnet_get_button_state(struct bonnet b,
+                                              bonnet_e_button button);
+
+/**
+ * bonnet_get_button_states updates the `*states` array with the states of all
+ * the buttons available on this bonnet
+ *
+ * The `states` array MUST be of size seven (7) to update all GPIO buttons
+ * correctly. Array size less than seven (7) will cause memory issues
+ *
+ * For ease of indexing, use the BONNET_BUTTON_IDX_*** defines
+ *
+ * The array will be populated with the states in the following order:
+ * states[0] --> Button A
+ *
+ * states[1] --> Button B
+ *
+ * states[2] --> Button Center
+ *
+ * states[3] --> Button Down
+ *
+ * states[4] --> Button Left
+ *
+ * states[5] --> Button Right
+ *
+ * states[6] --> Button Up
+ *
+ */
+void bonnet_get_button_states(struct bonnet b, bonnet_e_button_state *states);
 
 // Wrapper Functions
 
