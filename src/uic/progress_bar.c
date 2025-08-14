@@ -11,7 +11,7 @@ void uic_progress_bar_draw(ssd1306_fb_t *fb, void *_attr) {
                          attr->height, true, false);
   }
 
-  uint8_t pad = attr->border ? 2 : 0;
+  uint8_t pad = attr->border ? attr->padding : 0;
   int prog_bar_x = attr->origin.x + pad;
   int prog_bar_y = attr->origin.y + pad;
   uint8_t prog_bar_width = attr->width - (2 * pad);

@@ -9,6 +9,7 @@ typedef struct uic_progress_bar_attr {
   uint8_t width;
   uint8_t height;
   uint8_t progress; // 0 to 100
+  uint8_t padding;  // padding of the progress bar to the border
   bool border;
 } uic_progress_bar_attr_t;
 

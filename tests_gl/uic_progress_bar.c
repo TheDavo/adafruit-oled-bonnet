@@ -31,6 +31,7 @@ int main(void) {
       .height = 10,
       .progress = 50,
       .border = true,
+      .padding = 3,
   };
 
   uic_progress_bar_attr_t attr2 = {
@@ -42,7 +43,8 @@ int main(void) {
       .width = 50,
       .height = 15,
       .progress = 50,
-      .border = false,
+      .border = true,
+      .padding = 10,
   };
 
   struct timespec start, stop;
@@ -54,6 +56,8 @@ int main(void) {
     ((uic_progress_bar_attr_t *)prog_bar2->attr)->progress = progress;
     prog_bar->draw(my_hat.ssd.framebuf, prog_bar->attr);
     prog_bar2->draw(my_hat.ssd.framebuf, prog_bar2->attr);
+    // printf("framebuffer bytes written: %d\n", ssd1306_write_framebuffer_all_new(&my_hat.ssd));
+    // ssd1306_write_framebuffer_all_new(&my_hat.ssd);
     ssd1306_write_framebuffer_all(my_hat.ssd);
   }
   clock_gettime(CLOCK_MONOTONIC, &stop);

@@ -38,6 +38,7 @@ typedef struct ssd1306 {
   uint8_t i2c_addr;
   // int reset_gpio;
   ssd1306_fb_t *framebuf;
+  uint8_t *_fb_send;
 } ssd1306_t;
 
 /**
@@ -94,6 +95,7 @@ int ssd1306_write_data(ssd1306_t ssd, uint8_t data);
  *
  */
 int ssd1306_write_framebuffer_all(ssd1306_t ssd);
+int ssd1306_write_framebuffer_all_new(ssd1306_t *ssd);
 
 /**
  * ssd1306_write_multi_data writes the data in *data to the display driver,

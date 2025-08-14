@@ -35,10 +35,30 @@ int ssd1306_struct_init(ssd1306_t *ssd, uint8_t addr, char *dev_i2c,
   }
 
   ssd1306_fb_t *fb = ssd1306_fb_new(display_size, false);
+  int buffer_size;
+  switch (display_size) {
+  case ssd1306_display_size_128_32:
+    buffer_size = 128 * 32;
+    break;
+  case ssd1306_display_size_128_64:
+    buffer_size = 128 * 64;
+    break;
+  default:
+    // should never reach here!
+    return -1;
+  }
+
+  // allocate space for the framebuffer
+  uint8_t *fb_p1 = malloc(((buffer_size/8) + 1) * sizeof(uint8_t));
   if (!fb) {
     return (-1);
   }
+
+  if (!fb_p1) {
+    return (-1);
+  }
   ssd->framebuf = fb;
+  ssd->_fb_send = fb_p1;
   return (0);
 }
 
@@ -107,10 +127,21 @@ int ssd1306_write_framebuffer_all(ssd1306_t ssd) {
   // uint8_t data_start[1] = {0x40};
   // write(ssd.i2cfd, data_start, sizeof(data_start));
   // int bytes_written = write(ssd.i2cfd, ssd.framebuf->framebuf,
-  //                           (ssd.framebuf->height * ssd.framebuf->width) / 8);
+  //                           (ssd.framebuf->height * ssd.framebuf->width) /
+  //                           8);
   // return bytes_written;
   return ssd1306_write_data_multi(ssd, ssd.framebuf->framebuf, 1024);
 }
+
+int ssd1306_write_framebuffer_all_new(ssd1306_t *ssd) {
+  int buf_size = (ssd->framebuf->height * ssd->framebuf->width)/8; 
+  ssd->_fb_send[0] = 0x40;
+  memcpy(ssd->_fb_send + sizeof(uint8_t), ssd->framebuf->framebuf,
+         buf_size);
+
+  return write(ssd->i2cfd, ssd->_fb_send, buf_size + 1);
+}
+
 int ssd1306_write_data_to_segment(ssd1306_t ssd, uint8_t page, uint8_t segment,
                                   uint8_t data) {
 

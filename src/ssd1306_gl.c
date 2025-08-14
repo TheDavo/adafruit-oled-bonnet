@@ -36,6 +36,7 @@ ssd1306_fb_t *ssd1306_fb_new(ssd1306_display_size_e display_size, bool color) {
   }
 
   // allocate space for the framebuffer
+  buffer_size /= ssd1306_gl_PAGE_HEIGHT;
   uint8_t *framebuf = malloc(buffer_size * sizeof(uint8_t));
   if (NULL == framebuf) {
     return NULL;
