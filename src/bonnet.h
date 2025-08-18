@@ -185,26 +185,27 @@ typedef enum {
 } bonnet_e_button_state;
 
 /**
- * bonnet_e_button is a wrapper on the button macro values, and represent
- * the GPIO offsets on the Raspberry Pi 4
+ * bonnet_e_button is a wrapper on the button macro values, and represents
+ * the indexes of the buttons as an enum
  *
  */
 typedef enum {
-  bonnet_e_button_a = CONST_BUTTON_A,
-  bonnet_e_button_b = CONST_BUTTON_B,
-  bonnet_e_button_center = CONST_BUTTON_C,
-  bonnet_e_button_down = CONST_BUTTON_D,
-  bonnet_e_button_left = CONST_BUTTON_L,
-  bonnet_e_button_right = CONST_BUTTON_R,
-  bonnet_e_button_up = CONST_BUTTON_U,
+  bonnet_e_button_a = BONNET_BUTTON_IDX_A,
+  bonnet_e_button_b = BONNET_BUTTON_IDX_B,
+  bonnet_e_button_center = BONNET_BUTTON_IDX_CENTER,
+  bonnet_e_button_down = BONNET_BUTTON_IDX_DOWN,
+  bonnet_e_button_left = BONNET_BUTTON_IDX_LEFT,
+  bonnet_e_button_right = BONNET_BUTTON_IDX_RIGHT,
+  bonnet_e_button_up = BONNET_BUTTON_IDX_UP,
 } bonnet_e_button;
 
 /**
  * bonnet_get_button_state calls the appropriate `gpiod` function to get the
- * state of `button`, if that button is up or down
+ * state of `button`, and returns the button's state: up or down, as an enum
+ * value
  *
  */
-bonnet_e_button_state bonnet_get_button_state(struct bonnet b,
+bonnet_e_button_state bonnet_button_get_state(struct bonnet b,
                                               bonnet_e_button button);
 
 /**
@@ -213,8 +214,6 @@ bonnet_e_button_state bonnet_get_button_state(struct bonnet b,
  *
  * The `states` array MUST be of size seven (7) to update all GPIO buttons
  * correctly. Array size less than seven (7) will cause memory issues
- *
- * For ease of indexing, use the BONNET_BUTTON_IDX_*** defines
  *
  * The array will be populated with the states in the following order:
  * states[0] --> Button A
@@ -232,7 +231,24 @@ bonnet_e_button_state bonnet_get_button_state(struct bonnet b,
  * states[6] --> Button Up
  *
  */
-void bonnet_get_button_states(struct bonnet b, bonnet_e_button_state *states);
+void bonnet_button_get_states(struct bonnet b, bonnet_e_button_state *states);
+
+/**
+ * bonnet_button_name_into_str takes a button and returns the button's name
+ * as a string
+ *
+ * This function is useful for debug mainly
+ *
+ */
+char *bonnet_button_name_into_str(bonnet_e_button button);
+
+/**
+ * bonnet_button_state_into_str takes a button state and returns it as a string
+ *
+ * This function is useful for debug mainly
+ *
+ */
+char *bonnet_button_state_into_str(bonnet_e_button_state state);
 
 // Wrapper Functions
 

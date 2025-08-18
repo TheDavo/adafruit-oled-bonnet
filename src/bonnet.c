@@ -207,6 +207,79 @@ void bonnet_action_clear_display(struct bonnet *b) {
 }
 
 // GPIO Commands
+//
+
+void bonnet_get_button_states(struct bonnet b, bonnet_e_button_state *states) {
+  int button_values[7];
+  gpiod_line_get_value_bulk(&(b.buttons), button_values);
+
+  for (int i = 0; i < 7; i++) {
+    if (0 == button_values[i]) {
+      states[i] = bonnet_e_button_state_down;
+    } else {
+      // on default, even if the function errors, assume the button is not
+      // pressed
+      // this is due to the buttons having a pull-up resistor enabled
+      states[i] = bonnet_e_button_state_up;
+    }
+  }
+}
+
+bonnet_e_button_state bonnet_get_button_state(struct bonnet b,
+                                              bonnet_e_button button) {
+  // this was meant to be implemented using the `gpiod_get_line_value` function
+  // but for some reason that only resulted in the first indexes value being
+  // returned
+  //
+  // original implementation:
+  /*
+    int state = gpiod_line_get_value(b.buttons.lines[button]);
+  */
+  int button_values[7];
+  gpiod_line_get_value_bulk(&(b.buttons), button_values);
+  if (0 == button_values[button]) {
+    return bonnet_e_button_state_down;
+  } else {
+    // on default, even if the function errors, assume the button is not
+    // pressed
+    // this is due to the buttons having a pull-up resistor enabled
+    return bonnet_e_button_state_up;
+  }
+}
+
+char *bonnet_button_name_into_str(bonnet_e_button button) {
+  switch (button) {
+  case bonnet_e_button_a:
+    return "A";
+  case bonnet_e_button_b:
+    return "B";
+  case bonnet_e_button_center:
+    return "CENTER";
+  case bonnet_e_button_down:
+    return "DOWN";
+  case bonnet_e_button_up:
+    return "UP";
+  case bonnet_e_button_left:
+    return "LEFT";
+  case bonnet_e_button_right:
+    return "RIGHT";
+  }
+
+  // should not be able to get here, all switch cases accounted for
+  return "";
+}
+
+char *bonnet_button_state_into_str(bonnet_e_button_state state) {
+  switch (state) {
+  case bonnet_e_button_state_down:
+    return "DOWN";
+  case bonnet_e_button_state_up:
+    return "UP";
+  }
+
+  // should not be able to get here, all switch cases accounted for
+  return "";
+}
 
 // Wrapper Commands
 
