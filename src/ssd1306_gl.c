@@ -1,10 +1,15 @@
 #include "ssd1306_gl.h"
+#include "../fonts/font8x8_basic.h"
+#include "ssd1306.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+
+// for debug
+// #include <stdio.h>
 
 //
 // pseudo-private functions (written here but not in header file)
@@ -110,6 +115,21 @@ void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, uint8_t x, uint8_t y,
   }
 
   self->framebuf[pixel_buffer_location] = pixel_value;
+}
+
+bool ssd1306_fb_pixel_get(ssd1306_fb_t *self, uint8_t x, uint8_t y) {
+  //
+  // framebuffer is uint8_t, so to get pixel value at (x, y) first the
+  // correct byte needs to be identified then bit shift based on the `y`
+  // to get the correct pixel value
+  //
+
+  int idx = (y / ssd1306_PAGE_HEIGHT) * self->width + x;
+  uint8_t y_bshift = y % ssd1306_PAGE_HEIGHT;
+  uint8_t pixel_byte = self->framebuf[idx];
+  uint8_t pixel_value = (pixel_byte >> y_bshift) & 1;
+
+  return pixel_value;
 }
 
 //
@@ -224,8 +244,7 @@ void ssd1306_fb_draw_rect(ssd1306_fb_t *self, int tl_x, int tl_y,
 
   if (fill) {
     for (int fill_y = tl_y; fill_y < bl_y; fill_y++) {
-      ssd1306_fb_draw_line_carte(self, tl_x, fill_y, tr_x, fill_y,
-                                 color);
+      ssd1306_fb_draw_line_carte(self, tl_x, fill_y, tr_x, fill_y, color);
     }
   }
 }
@@ -383,7 +402,7 @@ void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
 //
 // this is similar to how the line algorithms swap the x and y line inputs
 // depending on the slope of the line (is it more horizontal or vertical?)
-// 
+//
 void ssd1306_fb_draw_ellipse(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
                              uint8_t x_radius, uint8_t y_radius, bool color,
                              bool fill) {
@@ -459,5 +478,32 @@ void ssd1306_fb_draw_ellipse(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
       ellipse_error += y_change;
       y_change += two_a_square;
     }
+  }
+}
+
+void ssd1306_fb_draw_8x8font_str(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
+                                 char *str, int str_len, bool color,
+                                 bool invert_color_from_background) {
+  int set;
+  int curr;
+  int draw_x = origin.x;
+  for (int str_i = 0; str_i < str_len; str_i++) {
+    curr = str[str_i];
+    char *bitmap = font8x8_basic[curr];
+    for (int char_row = 0; char_row < 8; char_row++) {
+      for (int char_shift = 0; char_shift < 8; char_shift++) {
+        set = bitmap[char_row] & 1 << char_shift;
+        if (set) {
+          if (invert_color_from_background) {
+            bool pixel_get = ssd1306_fb_pixel_get(self, draw_x + char_shift,
+                                                  origin.y + char_row);
+            color = !pixel_get;
+          }
+          ssd1306_fb_draw_pixel(self, draw_x + char_shift, origin.y + char_row,
+                                color);
+        }
+      }
+    }
+    draw_x += 8;
   }
 }

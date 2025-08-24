@@ -11,6 +11,7 @@ typedef struct uic_progress_bar_attr {
   uint8_t progress; // 0 to 100
   uint8_t padding;  // padding of the progress bar to the border
   bool border;
+  bool display_progress;
 } uic_progress_bar_attr_t;
 
 void uic_progress_bar_draw(ssd1306_fb_t *fb, void *_attr);

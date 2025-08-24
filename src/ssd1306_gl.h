@@ -64,6 +64,8 @@ bool ssd1306_fb_bounds_check(ssd1306_fb_t self, int x, int y);
 void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, uint8_t x, uint8_t y,
                            bool color);
 
+bool ssd1306_fb_pixel_get(ssd1306_fb_t *self, uint8_t x, uint8_t y);
+
 /**
  * ssd1306_fb_draw_line_carte draws a line from point (`x0, y0`) to (`x1, y1`)
  * with a color `color`
@@ -123,7 +125,7 @@ void ssd1306_fb_draw_arc(ssd1306_fb_t *self, int x0, int y0, uint8_t radius,
 /**
  * ssd1306_fb_draw_triangle takes in three vertices as inputs and draws the
  * lines from v0 -> v1, v1 -> v2, v2 -> v0 with `color` and fills in the
- * triangle if `fill` is `true` 
+ * triangle if `fill` is `true`
  *
  */
 void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
@@ -141,4 +143,15 @@ void ssd1306_fb_draw_triangle(ssd1306_fb_t *self, ssd1306_fb_vec2_t v0,
 void ssd1306_fb_draw_ellipse(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
                              uint8_t x_radius, uint8_t y_radius, bool color,
                              bool fill);
+
+/**
+ * ssd1306_fb_render_8x8font_str takes a string and renders it to the screen,
+ * starting at `origin`, which is the top-left corner of the font start point
+ *
+ * Render function used from `render.c` file from the font repo:
+ * https://github.com/dhepper/font8x8/tree/master
+ */
+void ssd1306_fb_draw_8x8font_str(ssd1306_fb_t *self, ssd1306_fb_vec2_t origin,
+                                   char *str, int str_len, bool color,
+                                   bool invert_color_from_background);
 #endif

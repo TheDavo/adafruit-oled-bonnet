@@ -209,7 +209,7 @@ void bonnet_action_clear_display(struct bonnet *b) {
 // GPIO Commands
 //
 
-void bonnet_get_button_states(struct bonnet b, bonnet_e_button_state *states) {
+void bonnet_button_get_states(struct bonnet b, bonnet_e_button_state *states) {
   int button_values[7];
   gpiod_line_get_value_bulk(&(b.buttons), button_values);
 
@@ -225,7 +225,7 @@ void bonnet_get_button_states(struct bonnet b, bonnet_e_button_state *states) {
   }
 }
 
-bonnet_e_button_state bonnet_get_button_state(struct bonnet b,
+bonnet_e_button_state bonnet_button_get_state(struct bonnet b,
                                               bonnet_e_button button) {
   // this was meant to be implemented using the `gpiod_get_line_value` function
   // but for some reason that only resulted in the first indexes value being

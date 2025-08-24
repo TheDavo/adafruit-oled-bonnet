@@ -32,19 +32,21 @@ int main(void) {
       .progress = 50,
       .border = true,
       .padding = 3,
+      .display_progress = false,
   };
 
   uic_progress_bar_attr_t attr2 = {
       .origin =
           {
-              .x = 10,
-              .y = 30,
+              .x = 8,
+              .y = 32,
           },
       .width = 50,
       .height = 15,
       .progress = 50,
       .border = true,
-      .padding = 10,
+      .padding = 2,
+      .display_progress = true,
   };
 
   struct timespec start, stop;
