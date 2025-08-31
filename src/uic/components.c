@@ -1,8 +1,8 @@
 #include "components.h"
-#include "progress_bar.h"
+#include "bar.h"
 #include <stdlib.h>
 
-uic_t *uic_progress_bar_new(uic_progress_bar_attr_t *attr) {
+uic_t *uic_progress_bar_new(uic_bar_attr_t *attr) {
   uic_t *progress_bar = malloc(sizeof(uic_t));
   if (NULL == progress_bar) {
     return NULL;

@@ -2,7 +2,7 @@
 #define COMPONENTS_H
 
 #include "../ssd1306_gl.h"
-#include "progress_bar.h"
+#include "bar.h"
 #include <stdint.h>
 
 // uic -> UI component
@@ -14,6 +14,6 @@ typedef struct uic {
 
 void uic_free(uic_t *component);
 
-uic_t *uic_progress_bar_new(uic_progress_bar_attr_t *attr);
+uic_t *uic_progress_bar_new(uic_bar_attr_t *attr);
 
 #endif

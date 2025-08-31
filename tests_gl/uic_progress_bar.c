@@ -2,7 +2,7 @@
 #include "../src/ssd1306.h"
 #include "../src/ssd1306_gl.h"
 #include "../src/uic/components.h"
-#include "../src/uic/progress_bar.h"
+#include "../src/uic/bar.h"
 
 #include <bits/time.h>
 #include <math.h>
@@ -21,7 +21,7 @@ int main(void) {
   bonnet_display_initialize(my_hat);
   bonnet_action_clear_display(&my_hat);
 
-  uic_progress_bar_attr_t attr = {
+  uic_bar_attr_t attr = {
       .origin =
           {
               .x = 10,
@@ -29,24 +29,28 @@ int main(void) {
           },
       .width = 100,
       .height = 10,
-      .progress = 50,
+      .progress_current = 50,
+      .progress_to = 100,
       .border = true,
       .padding = 3,
       .display_progress = false,
+      .progress_display_type = PROGRESS_TYPE_CURRENT,
   };
 
-  uic_progress_bar_attr_t attr2 = {
+  uic_bar_attr_t attr2 = {
       .origin =
           {
               .x = 8,
               .y = 32,
           },
-      .width = 50,
+      .width = 100,
       .height = 15,
-      .progress = 50,
+      .progress_current = 1024,
+      .progress_to = 2048,
       .border = true,
       .padding = 2,
       .display_progress = true,
+      .progress_display_type = PROGRESS_TYPE_FRACTION,
   };
 
   struct timespec start, stop;
@@ -54,11 +58,13 @@ int main(void) {
   uic_t *prog_bar2 = uic_progress_bar_new(&attr2);
   clock_gettime(CLOCK_MONOTONIC, &start);
   for (int progress = 0; progress <= 100; progress += 2) {
-    ((uic_progress_bar_attr_t *)prog_bar->attr)->progress = progress;
-    ((uic_progress_bar_attr_t *)prog_bar2->attr)->progress = progress;
+    ((uic_bar_attr_t *)prog_bar->attr)->progress_current = progress;
+    ((uic_bar_attr_t *)prog_bar2->attr)->progress_current =
+        progress * 20;
     prog_bar->draw(my_hat.ssd.framebuf, prog_bar->attr);
     prog_bar2->draw(my_hat.ssd.framebuf, prog_bar2->attr);
-    // printf("framebuffer bytes written: %d\n", ssd1306_write_framebuffer_all_new(&my_hat.ssd));
+    // printf("framebuffer bytes written: %d\n",
+    // ssd1306_write_framebuffer_all_new(&my_hat.ssd));
     // ssd1306_write_framebuffer_all_new(&my_hat.ssd);
     ssd1306_write_framebuffer_all(my_hat.ssd);
   }
