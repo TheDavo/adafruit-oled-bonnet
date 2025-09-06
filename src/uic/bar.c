@@ -1,6 +1,7 @@
 #include "bar.h"
 #include "../ssd1306_gl.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 void uic_progress_bar_draw(ssd1306_fb_t *fb, void *_attr) {
@@ -83,4 +84,16 @@ void uic_progress_bar_draw(ssd1306_fb_t *fb, void *_attr) {
 
     // account for null
   }
+}
+
+uic_t *uic_progress_bar_new(uic_bar_attr_t *attr) {
+  uic_t *progress_bar = malloc(sizeof(uic_t));
+  if (NULL == progress_bar) {
+    return NULL;
+  }
+
+  progress_bar->attr = attr;
+  progress_bar->draw = uic_progress_bar_draw;
+
+  return progress_bar;
 }

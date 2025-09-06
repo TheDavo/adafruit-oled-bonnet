@@ -2,6 +2,7 @@
 #define SEGMENT16_H
 
 #include "../ssd1306_gl.h"
+#include "./components.h"
 
 typedef struct uic_segment16_attr {
   ssd1306_fb_vec2_t origin;
@@ -27,6 +28,12 @@ typedef struct uic_segment16_attr {
 } uic_segment16_attr_t;
 
 void uic_segment16_draw(ssd1306_fb_t *fb, void *_attr);
+
+uic_t *uic_segment16_new(uic_segment16_attr_t *attr);
+uic_t *uic_segment16_new_from_char(char c, uic_segment16_attr_t *attr);
+uic_t *uic_segment16_new_from_int(int num, uic_segment16_attr_t *attr);
+uic_t *uic_segment16_new_from_str(char *str, int str_len,
+                                   uic_segment16_attr_t *init_setting);
 
 void uic_segment16__draw_0(ssd1306_fb_t *fb, void *_attr);
 void uic_segment16__draw_1(ssd1306_fb_t *fb, void *_attr);
@@ -67,7 +74,7 @@ void uic_segment16_attr_set_segments(uic_segment16_attr_t *attr,
 //    | / | \ |
 //   14     15
 //   ----.----
-static const uint16_t font_segment16[128] = {
+static const uint16_t uic_segment16_font[128] = {
     0b1111111111111111, // U+0000 (nul)
     0b0000000000000000, // U+0001
     0b0000000000000000, // U+0002

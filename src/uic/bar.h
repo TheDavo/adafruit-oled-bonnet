@@ -2,7 +2,9 @@
 #define BAR_H
 
 #include "../ssd1306_gl.h"
+#include "./components.h"
 #include <stdint.h>
+
 
 typedef enum {
   PROGRESS_TYPE_PERCENTAGE, // e.g 50%
@@ -25,5 +27,7 @@ typedef struct uic_bar_attr {
 } uic_bar_attr_t;
 
 void uic_progress_bar_draw(ssd1306_fb_t *fb, void *_attr);
+
+uic_t *uic_progress_bar_new(uic_bar_attr_t *attr);
 
 #endif

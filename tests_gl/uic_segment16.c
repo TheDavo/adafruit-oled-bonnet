@@ -46,6 +46,19 @@ int main(void) {
   }
   ssd1306_write_framebuffer_all(b.ssd);
 
+  ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
+
+  // print '0' to '9'
+  for (int ch = 48; ch < 58; ch++) {
+    uic_t *seg_ch = uic_segment16_new_from_char((char)ch, &attr);
+    seg_ch->draw(b.ssd.framebuf, &attr);
+    ssd1306_write_framebuffer_all(b.ssd);
+    // sleep(1);
+    usleep(10 * 1000); // 10 msec
+    ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
+    
+  }
+  
   sleep(3);
   free(seg16);
   bonnet_set_display_off(b);

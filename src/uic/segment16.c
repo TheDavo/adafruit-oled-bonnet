@@ -1,5 +1,7 @@
 #include "segment16.h"
 #include "../ssd1306_gl.h"
+#include <stdlib.h>
+#include <string.h>
 
 // Reference of the segments
 //     00   01
@@ -13,9 +15,9 @@
 //   14     15
 //   ----.----
 
-// 
+//
 // array of functions to dynamically call the appropriate draw function
-// 
+//
 void (*uic_segment16_draw_fns[16])(ssd1306_fb_t *, void *) = {
     uic_segment16__draw_0,  uic_segment16__draw_1,  uic_segment16__draw_2,
     uic_segment16__draw_3,  uic_segment16__draw_4,  uic_segment16__draw_5,
@@ -255,7 +257,62 @@ void uic_segment16__draw_15(ssd1306_fb_t *fb, void *_attr) {
   ssd1306_fb_draw_line_carte(fb, x0, y0, x1, y1, attr->color);
 }
 
+//
+// setter/getter funcs
+//
+
 void uic_segment16_attr_set_segments(uic_segment16_attr_t *attr,
-                                    uint16_t segments) {
+                                     uint16_t segments) {
   attr->segments = segments;
+}
+
+//
+// new* funcs
+//
+
+uic_t *uic_segment16_new_from_char(char c, uic_segment16_attr_t *attr) {
+  uic_t *segment = malloc(sizeof(uic_t));
+  if (NULL == segment) {
+    return NULL;
+  }
+
+  attr->segments = uic_segment16_font[(int)c];
+  segment->attr = attr;
+
+  segment->draw = uic_segment16_draw;
+  return segment;
+}
+
+uic_t *uic_segment16_new_from_str(char *str, int str_len,
+                                  uic_segment16_attr_t *init_setting) {
+  uic_t *segments = malloc(sizeof(uic_t) * str_len);
+  if (NULL == segments) {
+    return NULL;
+  }
+
+  int o_originx = init_setting->origin.x;
+  // int o_originy = init_setting->origin.y;
+  int o_height = init_setting->height;
+  int o_width = o_height / 2;
+
+  for (int i = 0; i < str_len; i++) {
+    uic_segment16_attr_t *seg_attr = malloc(sizeof(uic_segment16_attr_t));
+    if (NULL == seg_attr) {
+      free(segments);
+      return NULL;
+    }
+
+    memcpy(seg_attr, init_setting, sizeof(uic_segment16_attr_t));
+    segments[i].attr = seg_attr;
+
+    char c = str[i];
+    uic_segment16_attr_set_segments(segments[i].attr,
+                                    uic_segment16_font[(int)c]);
+
+    ((uic_segment16_attr_t *)(segments[i].attr))->origin.x =
+        (o_originx + o_width / 2) * i;
+    segments[i].draw = uic_segment16_draw;
+  }
+
+  return segments;
 }
