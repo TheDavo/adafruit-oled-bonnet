@@ -46,6 +46,10 @@ $(test_dir)uic_progress_bar.out: $(srcs) $(uic_srcs) ./tests_gl/uic_progress_bar
 $(test_dir)draw_text.out: $(srcs) $(fonts) ./tests_gl/uic_progress_bar.c
 	$(CC) -o draw_text.out ./tests_gl/draw_text.c $(srcs) $(fonts) $(errors) $(libs) -g
 
+$(test_dir)uic_segment16.out: $(srcs) $(uic_srcs) ./tests_gl/uic_segment16.c
+	$(CC) -o uic_segment16.out ./tests_gl/uic_segment16.c $(srcs) $(uic_srcs) \
+	$(fonts) $(errors) $(libs) -g
+
 
 
 gpio_test.out: gpio_test.c $(srcs)
