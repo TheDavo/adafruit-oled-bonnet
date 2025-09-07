@@ -22,7 +22,7 @@ int main(void) {
   bonnet_display_initialize(b);
   bonnet_action_clear_display(&b);
 
-  uic_segment16_attr_t attr = {
+  uic_segment16_attr_t init_setting = {
       .origin = {.x = 10, .y = 30},
       .height = 16,
       .segments = 0,
@@ -30,36 +30,51 @@ int main(void) {
       .color = true,
   };
 
-  uic_t *seg16 = uic_segment16_new_from_char('1', &attr);
+  // test new_from_char
+  uic_t *seg16 = uic_segment16_new_from_char('1', &init_setting);
   seg16->draw(b.ssd.framebuf, seg16->attr);
   ssd1306_write_framebuffer_all(b.ssd);
-  sleep(2);
+  sleep(1);
   ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
 
-  // array of uic_t
-  attr.height = 9;
-  char *str = "0123456789101010101";
+  // test new_from_str
+  init_setting.height = 9;
+  char *str = "0123456789 10 12";
   int str_len = strlen(str);
-  uic_t *seg_str = uic_segment16_new_from_str(str, str_len, &attr);
-  for (int i = 0; i < str_len; i++) {
-    seg_str[i].draw(b.ssd.framebuf, seg_str[i].attr);
-  }
+  uic_t *seg_str = uic_segment16_new_from_str(str, str_len, &init_setting, 4);
+  seg_str->draw(b.ssd.framebuf, seg_str->attr);
   ssd1306_write_framebuffer_all(b.ssd);
 
   ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
+  init_setting.origin.x = 1;
+  init_setting.origin.y = 10;
+  init_setting.height = 4;
+  char *word_str = "THE QUICK BROWN FOX\nJUMPED OVER THE LAZY\nDOG";
+  str_len = strlen(word_str);
+  uic_t *seg_str_word =
+      uic_segment16_new_from_str(word_str, str_len, &init_setting, 4);
+  seg_str_word->draw(b.ssd.framebuf, seg_str_word->attr);
+  ssd1306_write_framebuffer_all(b.ssd);
 
-  // print '0' to '9'
-  for (int ch = 48; ch < 58; ch++) {
-    uic_t *seg_ch = uic_segment16_new_from_char((char)ch, &attr);
-    seg_ch->draw(b.ssd.framebuf, &attr);
-    ssd1306_write_framebuffer_all(b.ssd);
-    // sleep(1);
-    usleep(10 * 1000); // 10 msec
-    ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
-    
-  }
-  
   sleep(3);
+
+  // test new_from_int
+  ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
+  init_setting.origin.x = 32;
+  init_setting.height = 32;
+  struct timespec start, stop;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int i = -100; i <= 100; i += 3) {
+    ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
+    uic_t *seg_int = uic_segment16_new_from_int(i, &init_setting, 4);
+    seg_int->draw(b.ssd.framebuf, seg_int->attr);
+    ssd1306_write_framebuffer_all(b.ssd);
+  }
+  clock_gettime(CLOCK_MONOTONIC, &stop);
+  printf("fps: %f\n", ((double)200 / 3) / (stop.tv_sec - start.tv_sec));
+  ssd1306_fb_clear_buffer(b.ssd.framebuf, false);
+
+  sleep(1);
   free(seg16);
   bonnet_set_display_off(b);
   bonnet_close(&b);
