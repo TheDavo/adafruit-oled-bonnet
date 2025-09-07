@@ -22,47 +22,62 @@ typedef struct uic_segment16_attr {
   //    | / | \ |
   //   14     15
   //   ----.----
+  //
   uint16_t segments;
   bool dot;
   bool color;
+
+  // used to determine how many characters to plot when the `draw` function
+  // is called
+  //
+  int len;
 } uic_segment16_attr_t;
 
 void uic_segment16_draw(ssd1306_fb_t *fb, void *_attr);
 
-uic_t *uic_segment16_new(uic_segment16_attr_t *attr);
+/**
+ * uic_segment16_new_from_char takes a single character as the input to create
+ *  the 16 segment struct, and `attr` for positioning and sizing for drawing
+ *
+ */
 uic_t *uic_segment16_new_from_char(char c, uic_segment16_attr_t *attr);
-uic_t *uic_segment16_new_from_int(int num, uic_segment16_attr_t *attr);
+
+/**
+ * uic_segment16_new_from_int makes the segment16 object from an integer using
+ * the `init_settings` parameter for positioning and sizing for drawing
+ *
+ * The `spacing` parameter is the spacing between the numbers drawn
+ *
+ */
+uic_t *uic_segment16_new_from_int(int num, uic_segment16_attr_t *init_setting,
+                                  int spacing);
+/**
+ * uic_segment16_new_from_str makes the segment16 object from a string using
+ * the `init_settings` parameter for positioning and sizing for drawing
+ *
+ * The `spacing` parameter is the spacing between the characters drawn
+ *
+ */
 uic_t *uic_segment16_new_from_str(char *str, int str_len,
-                                   uic_segment16_attr_t *init_setting);
+                                  uic_segment16_attr_t *init_setting,
+                                  int spacing);
 
-void uic_segment16__draw_0(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_1(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_2(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_3(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_4(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_5(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_6(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_7(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_8(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_9(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_10(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_11(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_12(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_13(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_14(ssd1306_fb_t *fb, void *_attr);
-void uic_segment16__draw_15(ssd1306_fb_t *fb, void *_attr);
-
-void uic_segment16_attr_set_segments(uic_segment16_attr_t *attr,
-                                    uint16_t segments);
-
-// static const uic_segment16_draw_fncs segment_draw_fns[16] = {
-//     uic_segment16__draw_0,  uic_segment16__draw_1,  uic_segment16__draw_2,
-//     uic_segment16__draw_3,  uic_segment16__draw_4,  uic_segment16__draw_5,
-//     uic_segment16__draw_6,  uic_segment16__draw_7,  uic_segment16__draw_8,
-//     uic_segment16__draw_9,  uic_segment16__draw_10, uic_segment16__draw_11,
-//     uic_segment16__draw_12, uic_segment16__draw_13, uic_segment16__draw_14,
-//     uic_segment16__draw_15,
-// };
+void uic_segment16__draw_0(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_1(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_2(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_3(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_4(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_5(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_6(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_7(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_8(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_9(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_10(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_11(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_12(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_13(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_14(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
+void uic_segment16__draw_15(ssd1306_fb_t *fb, uic_segment16_attr_t attr);
 
 //     00   01
 //   ----.----
@@ -138,7 +153,7 @@ static const uint16_t uic_segment16_font[128] = {
     0b1100001111000011, // U+0032 (2)
     0b1110000101000011, // U+0033 (3)
     0b0010000111000100, // U+0034 (4)
-    0b1110000110000111, // U+0035 (5)
+    0b1101000110000111, // U+0035 (5)
     0b1110001110000111, // U+0036 (6)
     0b0010000001000011, // U+0037 (7)
     0b1110001111000111, // U+0038 (8)
@@ -150,18 +165,18 @@ static const uint16_t uic_segment16_font[128] = {
     0b0000000000000000, // U+003E (>)
     0b0000000000000000, // U+003F (?)
     0b0000000000000000, // U+0040 (@)
-    0b0000000000000000, // U+0041 (A)
-    0b0000000000000000, // U+0042 (B)
-    0b0000000000000000, // U+0043 (C)
-    0b0000000000000000, // U+0044 (D)
-    0b0000000000000000, // U+0045 (E)
-    0b0000000000000000, // U+0046 (F)
-    0b0000000000000000, // U+0047 (G)
-    0b0000000000000000, // U+0048 (H)
-    0b0000000000000000, // U+0049 (I)
-    0b0000000000000000, // U+004A (J)
-    0b0000000000000000, // U+004B (K)
-    0b0000000000000000, // U+004C (L)
+    0b0010001111000111, // U+0041 (A)
+    0b1110100101010011, // U+0042 (B)
+    0b1100001000000111, // U+0043 (C)
+    0b1110100001010011, // U+0044 (D)
+    0b1100001010000111, // U+0045 (E)
+    0b0000001010000111, // U+0046 (F)
+    0b1110001100000111, // U+0047 (G)
+    0b0010001111000100, // U+0048 (H)
+    0b1100100000010011, // U+0049 (I)
+    0b1110001001000010, // U+004A (J)
+    0b0001001000100100, // U+004B (K)
+    0b1100001000000100, // U+004C (L)
     //     00   01
     //   ----.----
     //   0203040506
@@ -172,23 +187,23 @@ static const uint16_t uic_segment16_font[128] = {
     //    | / | \ |
     //   14     15
     //   ----.----
-    0b0000000000000000, // U+004D (M)
-    0b0000000000000000, // U+004E (N)
-    0b0000000000000000, // U+004F (O)
-    0b0000000000000000, // U+0050 (P)
-    0b0000000000000000, // U+0051 (Q)
-    0b0000000000000000, // U+0052 (R)
-    0b0000000000000000, // U+0053 (S)
-    0b0000000000000000, // U+0054 (T)
-    0b0000000000000000, // U+0055 (U)
-    0b0000000000000000, // U+0056 (V)
-    0b0000000000000000, // U+0057 (W)
-    0b0000000000000000, // U+0058 (X)
-    0b0000000000000000, // U+0059 (Y)
-    0b0000000000000000, // U+005A (Z)
-    0b0000000000000000, // U+005B ([)
-    0b0000000000000000, // U+005C (\)
-    0b0000000000000000, // U+005D (])
+    0b0010001001101100, // U+004D (M)
+    0b0011001001001100, // U+004E (N)
+    0b1110001001000111, // U+004F (O)
+    0b0000001111000111, // U+0050 (P)
+    0b1111001001000111, // U+0051 (Q)
+    0b0001001111000111, // U+0052 (R)
+    0b1110000110000111, // U+0053 (S)
+    0b0000100000010011, // U+0054 (T)
+    0b1110001001000100, // U+0055 (U)
+    0b0000011000100100, // U+0056 (V)
+    0b0011011001000100, // U+0057 (W)
+    0b0001010000101000, // U+0058 (X)
+    0b1110000111000100, // U+0059 (Y)
+    0b1100010000100011, // U+005A (Z)
+    0b1000100000010010, // U+005B ([)
+    0b0001000000010000, // U+005C (\)
+    0b0100100000010001, // U+005D (])
     0b0000000000000000, // U+005E (^)
     0b0000000000000000, // U+005F (_)
     0b0000000000000000, // U+0060 (`)
