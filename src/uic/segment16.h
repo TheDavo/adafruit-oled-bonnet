@@ -36,6 +36,14 @@ typedef struct uic_segment16_attr {
 void uic_segment16_draw(ssd1306_fb_t *fb, void *_attr);
 
 /**
+ * TODO:
+ * uic_segment16_free frees all the allocated segment16 memory using the
+ * attr->len variable to determine how much memory to free
+ *
+ */
+void uic_segment16_free(uic_t *segment_ptr);
+
+/**
  * uic_segment16_new_from_char takes a single character as the input to create
  *  the 16 segment struct, and `attr` for positioning and sizing for drawing
  *

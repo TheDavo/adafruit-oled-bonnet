@@ -92,7 +92,7 @@ bool ssd1306_fb_bounds_check(ssd1306_fb_t self, int x, int y) {
   return is_x_okay && is_y_okay;
 }
 
-void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, uint8_t x, uint8_t y,
+void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, int x, int y,
                            bool color) {
   if (!self) {
     return;

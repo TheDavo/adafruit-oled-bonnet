@@ -61,7 +61,7 @@ bool ssd1306_fb_bounds_check(ssd1306_fb_t self, int x, int y);
  * (`x, y`) in the framebuffer
  *
  */
-void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, uint8_t x, uint8_t y,
+void ssd1306_fb_draw_pixel(ssd1306_fb_t *self, int x, int y,
                            bool color);
 
 bool ssd1306_fb_pixel_get(ssd1306_fb_t *self, uint8_t x, uint8_t y);

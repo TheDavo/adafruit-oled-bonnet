@@ -50,6 +50,9 @@ $(test_dir)uic_segment16.out: $(srcs) $(uic_srcs) ./tests_gl/uic_segment16.c
 	$(CC) -o uic_segment16.out ./tests_gl/uic_segment16.c $(srcs) $(uic_srcs) \
 	$(fonts) $(errors) $(libs) -g
 
+$(test_dir)uic_cursor.out: $(srcs) $(uic_srcs) ./tests_gl/uic_cursor.c
+	$(CC) -o uic_cursor.out ./tests_gl/uic_cursor.c $(srcs) $(uic_srcs) \
+	$(fonts) $(errors) $(libs) -g
 
 
 gpio_test.out: gpio_test.c $(srcs)

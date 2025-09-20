@@ -46,18 +46,6 @@ void uic_segment16_draw(ssd1306_fb_t *fb, void *_attr) {
     }
     attr++;
   }
-
-  // for (int i = 0; i < len; i++) {
-  //   // printf("[uic_segment16_draw] i: %d, len: %d\n", i, attr->len);
-  //   uic_segment16_attr_t cur_attr = attr[i];
-  //   printf("attr[%d] len: %u\n%p\n", i, cur_attr.len, (void *)&cur_attr);
-  //   for (int shift = 0; shift < 16; shift++) {
-  //     if (cur_attr.segments & (0x1 << shift)) {
-  //       // uic_segment16_draw_fns[shift](fb, &attr[i]);
-  //       uic_segment16_draw_fns[shift](fb, &cur_attr);
-  //     }
-  //   }
-  // }
 }
 
 void uic_segment16__draw_0(ssd1306_fb_t *fb, uic_segment16_attr_t attr) {
@@ -368,4 +356,12 @@ uic_t *uic_segment16_new_from_str(char *str, int str_len,
   }
 
   return segments;
+}
+
+void uic_segment16_free(uic_t *segment_ptr) {
+  uic_segment16_attr_t *attr = (uic_segment16_attr_t *)segment_ptr->attr;
+
+  for (int i = attr->len - 1; i >= 0; i--) {
+    free(&segment_ptr[i]);
+  }
 }
